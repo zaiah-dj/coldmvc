@@ -1,0 +1,25 @@
+Where to start?
+
+coldmvc.sh needs to handle
+	listing instances (maybe...)
+	creating instances	
+		create the folders
+		copy (or link) default assets from /share/
+		orm property files
+		parse json
+		do some other shit...
+	removing instances
+
+
+coldmvc.sh also needs to hold these variables
+	backend selection (usually derby, but we can change it...)
+		
+
+coldmvc.sh - other stuff...	
+	some quick tests with mock data?
+
+
+a couple of tests I should probably do:
+	- checking banner connection (this just pings and returns a status)
+		you can log it and be overcomplicated...
+	- make a simple blogging system
