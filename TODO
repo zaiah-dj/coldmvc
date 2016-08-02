@@ -1,4 +1,16 @@
-Where to start?
+
+create routes from the cli
+
+create datasources from the cli
+
+OR
+
+create a data.json and let the cli read it
+
+
+somehow handle CRUD operations
+
+
 
 coldmvc.sh needs to handle
 	listing instances (maybe...)

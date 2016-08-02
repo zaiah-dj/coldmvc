@@ -1,0 +1,6 @@
+{
+	"datasource": <data>,
+	"Home":       <web>,
+	"name":       <name>,
+	"routes":     {}
+}

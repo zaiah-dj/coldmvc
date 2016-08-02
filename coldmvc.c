@@ -2,13 +2,17 @@
  *coldmvc.c* 
 
 create all dirs
+
 copy all files
+
 parse the current json manifest
 	use jsmn to parse and make sure it works correctly
+
 create any orm files if needed
 	create coldfusion's orm stupid files
+
 open a server and start doing requests
-	...
+
 create forms? (that's pretty easy)
 	create the html based on what's in the json file
  * --------------------------------------------- */
@@ -57,8 +61,9 @@ struct Instance { /*An instance is a site and it's stuff*/
 	const char *name;
 };
 
-#define ugly(a,b) \
-	#a#b
+int32_t filetype () {
+	return 0;	
+}
 
 char *mkpath (char *dest, const char *path, const char *iname, int len) {
 	char buf[2048]={0};

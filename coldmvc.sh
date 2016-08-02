@@ -21,11 +21,38 @@
 # files  - Server writes files here
 # sql    - SQL queries (should be part of properties probably)
 # views  - View part of MVC.  HTML goes here
+#
+#
+# Aliases (to test building example instances)
+# --------------------------------------------
+#
+# #Some aliases to get this thing to run correctly
+# function mkv ( ) {
+# 	APP=$1
+# 	[ -z "$APP" ] && { printf "No instance name specified.\n" 2>/dev/null; return; }
+# 	./coldmvc.sh -c $HOME/www/$APP
+# 	ln -s $HOME/www/$APP $HOME/prj/coldmvc/examples/$APP 
+# 	echo "Instance created at $HOME/www/$APP."
+# }
+# 
+# 
+# function rmv ( ) {
+# 	APP=$1
+# 	[ -z "$APP" ] && { printf "No instance name specified.\n" 2>/dev/null; return; }
+# 	rm -rf $HOME/www/$APP $HOME/prj/coldmvc/examples/$APP 
+# 	echo "Instance $HOME/www/$APP removed."
+# }
 # -----------------------------------------------------------
 
 PROGRAM=coldmvc
 BINDIR="$(dirname "$(readlink -f $0)")"
 SELF="$(readlink -f $0)"
+
+die () {
+	printf "$PROGRAM error: $1"	>/dev/stderr
+	exit $STATUS
+}
+
 
 usage () {
 	STATUS=${1:-0}
@@ -75,7 +102,8 @@ do
 	shift
 done
 
-#SRC=/etc/
+SRC="/share"
+SRC="./share"
 
 # Let's see everything
 printf "%30s: %s\n" "DIR" $DIR
@@ -95,25 +123,56 @@ case $OS in
 		;;
 esac
 
+
 if [ ! -z $DO_LIST ]  
 then 
 #Configuration is in /etc.  More than likely a SQL db with your stuff...
 printf "">2/dev/null
 fi
 
+
 # ???
 if [ ! -z $DO_CREATE ]
 then
+	#Die if no $DIR was specified.
+	[ -z $DIR ] && die "No directory specified."
+	#[ ${DIR:0:1} != '/' ] && [ ! -d `dirname $DIR` ] && die "Source directory does not exist."
+	#[ ${DIR:0:1} == '/' ] && [ ! -d $DIR ] && die "Source directory does not exist."
+
 	#Get the realpath
 	DIR=`realpath $DIR`
+
+	#Set a name
+	if [ ! -z $NAME ] 
+	then
+		NAME=`basename $DIR`
+	fi
+
 	#Make all directories
 	mkdir -p $DIR/{app,db,assets,files,sql,views} || echo "Failed to make new directory"
-	#Link the framework files into the root of the new folder
-	ln $SRC/Application.cfc $DIR/Application.cfc
-	ln $SRC/4xx-view.css $DIR/4xx-view.css
-	ln $SRC/5xx-view.css $DIR/5xx-view.css
+
+	#Copy the framework files into the root of the new folder. (should have been links)
+	cp $SRC/coldmvc.cfc $DIR/coldmvc.cfc
+
+	#Copy the rest of these because they may be heavily modified.
+	cp $SRC/4xx-view.css $DIR/4xx-view.css
+	cp $SRC/5xx-view.css $DIR/5xx-view.css
+	cp $SRC/4xx-view.cfm $DIR/views/4xx-view.cfm
+	cp $SRC/5xx-view.cfm $DIR/views/5xx-view.cfm
+	cp $SRC/Application.cfc $DIR/Application.cfc
+	cp $SRC/index.cfm $DIR/index.cfm
+	touch $DIR/{app,views}/default.cfm
+	touch $DIR/data.json
+	touch $DIR/index.cfm
+
 	#Create data.json or data.cfm (probably data.json)
-	#cp data.json data.json
+	[ ! -z $LOAD_JSON ] && [ ! -f $JSON ] && die "JSON not specified." 
+	if [ ! -z $LOAD_JSON ]
+	then
+		printf "" > /dev/null
+	else
+		cp $SRC/data.json $DIR/data.json
+	fi
 	#Create ORM files (these can be done at any time)	
 	#Create basic view files from some template somewhere
 fi

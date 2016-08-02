@@ -1,0 +1,17 @@
+files
+x	create an index.cfm
+-	change to use coldmvc and link with Application.cfc
+		i knew this fuckshit was going to take absolutely too long...
+	have a default response that shows data formatted
+	have an endpoint that deletes the test crap
+	have a default response for admin requests
+	make it disablable from data.json
+	
+
+admin handles what?
+	recreating things	
+	looking at data.cfm and all properties files under db/*
+	dump routes should be here too
+	
+	
+I'm going to go back

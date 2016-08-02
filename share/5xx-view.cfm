@@ -9,9 +9,12 @@
 	<body>
 	<h2>#status_code#</h2>
 	<h3>#status_message#</h3>
-		<cfdump var=#error_block#>
-	<cfif isDefined(status_addl)>
-		#status_addl#
+		<p>#errorMsg#</p>
+	<cfif isDefined("errorLong")>
+		<p>#errorLong#</p>
+	</cfif>
+	<cfif isDefined("exception")>
+		<cfdump var=#exception#>
 	</cfif>
 	</body>
 </cfoutput>
