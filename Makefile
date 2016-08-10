@@ -49,7 +49,6 @@ clean:
 	-find . -type f -iname "*.stackdump" | xargs rm
 	-find . -type f -iname "*-tests" | xargs rm
 	-find . -type f -iname ".*.swp" | xargs rm
-	rm server client bf
 
 permissions:
 	@find | grep -v './tools' | grep -v './examples' | grep -v './.git' | sed '1d' | xargs stat -c 'chmod %a %n' > PERMISSIONS
