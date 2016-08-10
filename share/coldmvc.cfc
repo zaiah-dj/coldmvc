@@ -11,11 +11,14 @@ TODO:
 /*Other directories*/
 this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 
+this.arrayMappings = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
+
 this.Mappings = {
 	"/"           = this.root_dir & "/",
 	"/app"        = this.root_dir & "app/",
 	"/assets"     = this.root_dir & "assets/",
 	"/bindata"    = this.root_dir & "bindata/",
+	"/files"      = this.root_dir & "files/",
 	"/sql"        = this.root_dir & "sql/",
 	"/std"        = this.root_dir & "std/",
 	"/templates"  = this.root_dir & "templates/",
@@ -34,6 +37,43 @@ this.Mappings = {
 function run_something() {
 	/*Loop through all the views in the directory*/
 	/*See all the info for it.*/	
+}
+
+
+/*....*/
+public Struct function upload_file (String formField, String mimetype) {
+	//Create a file name on the fly.
+	fp = this.Mappings["/files"]; 
+	fp = ToString(Left(fp, Len(fp) - 1)); 
+	
+	//Upload it.	
+	a = FileUpload(
+		fp            /*destination*/,
+		formField     /*Element from form to write*/,
+		"",           /*No mimetype limit*/
+		"MakeUnique"  /*file name overwrite function*/);
+	
+	//This ought to be some random name.
+	//randstr(16) & "<file extension>";
+
+	//writedump(a);abort;
+	//Return a big struct full of all file data.
+	return a;
+}
+
+
+/*Check if a result set is composed of all nulls*/
+public Boolean function isSetNull (Query q) {
+	columnNames=ListToArray(q.columnList);
+	if (q.recordCount eq 1) {
+		//Check that the first (and only) row is not blank.
+		for (ci=1; ci lte ArrayLen(columnNames); ci++)
+			if (q[columnNames[ci]][1] neq "") return false;	
+	}
+	else {
+		return false;
+	}
+	return true;
 }
 </cfscript>
 
@@ -192,38 +232,95 @@ public Boolean function check_file (Required String mapping, Required String fil
 		return 1; 
 	return 0;
 }
+</cfscript>
+
+<!---
+/*Get the database columns*/
+public String function get_column_names (Required String table, String db) {
+	d = new dbinfo(datasource = data.source, dbname = "tooty", table = table);
+writedump(d);
+	for (x = 1; x LTE d.recordCount; x++ ) {
+		writeoutput("<li>" & x & "</li>");
+	}
+abort;
+}
+--->
+
+
+<cffunction returnType="String" name="get_column_names">
+	<cfargument
+		name="table"
+		required="yes"
+		type="String">
+
+	<cfargument
+		name="dbname"
+		required="no"
+		type="numeric">
+
+	<!--- All of this crap needs to be split out somewhere. --->
+	<cfset fake_name = #randstr(5)#>
+
+	<cfdbinfo datasource="#data.source#" type="columns" name="cn" table="#table#">
+
+	<cfparam name="noop" default="">
+	<cfset noop="">
+
+	<cfloop query="cn">
+		<cfset noop &= "#cn.column_name#,">
+	</cfloop>
+
+	<cfreturn noop>	
+</cffunction>
+
+<cfscript>
+
+/*Add fields to a query very easily*/
+function setQueryField (
+	Required Query query, Required String columnName, 
+	Required Any fillValue, String columnType) {
+	type=(!StructKeyExists(Arguments, "columnType")) ? "varchar" : Arguments.columnType;
+	QueryAddColumn(query, columnName, type, ArrayNew(1));
+
+	/*Add callback support in fillValue...*/
+	for (i=1; i <= query.recordCount; i++)
+		QuerySetCell(query, columnName, fillValue, i);
+}
+
+
+/*A function to get random letters.*/
+public String function randstr (n) {
+	// make an array instead, and join it...
+	str="abcdefghijklmnoqrstuvwxyzABCDEFGHIJKLMNOQRSTUVWXYZ0123456789";
+	tr="";
+	for (x=1;x<n+1;x++)
+		tr = tr & Mid(str, RandRange(1, len(str) - 1), 1);
+	return tr;
+}
+
+
+public String function randnum (n) {
+	// make an array instead, and join it...
+	str="0123456789";
+	tr="";
+	for (x=1;x<n+1;x++)
+		tr = tr & Mid(str, RandRange(1, len(str) - 1), 1);
+	return tr;
+}
 
 
 /* ----------------------------------------------- *
  * ----------------------------------------------- */
-function make_index (Junk) {
+function make_index (ColdMVC ColdMVCInstance) {
 	//Catch log errors with this.
 	l="";
 
-	//Load JSON manifest with route information.
-	try {
-		logReport(l, "Loading JSON file");
-		jsonMfst = FileRead(getDirectoryFromPath(getCurrentTemplatePath()) & "data.json");
-		logReport(l, "Success");
-	}
-	catch (any e) {
-		render_page(status=500, errorMsg="Error reading data.json");
-		abort;
-	}
-
-
-	//Parse JSON manifest with route information.
-	try {
-		logReport(l, "Parsing JSON file");
-		appdata=DeserializeJSON(jsonMfst);
-		logReport(l, "Success");
-	}
-	catch (any e) {
-		render_page(status=500, errorMsg=ToString("Deserializing data.json failed"), stackTrace=e);
-		abort;
-	}
-
-
+	//Hackarific dot com
+	variables.coldmvc = ColdMVCInstance;
+	variables.model   = StructNew();
+	variables.data    = ColdMVCInstance.app;
+	variables.db      = ColdMVCInstance.app.data;
+	
 	//Find the right resource.
 	try {
 		logReport(l, "Evaluating URL route");
@@ -644,6 +741,34 @@ public function load (String dir) {
 
 /*Initialize some stuff*/
 public ColdMVC function init (Struct appscope) {
+	//Catch log errors with this.
+	l="";
+	//Load JSON manifest with route information.
+	try {
+		logReport(l, "Loading JSON file");
+		jsonMfst = FileRead(getDirectoryFromPath(getCurrentTemplatePath()) & "data.json");
+		logReport(l, "Success");
+	}
+	catch (any e) {
+		render_page(status=500, errorMsg="Error reading data.json");
+		abort;
+	}
+
+
+	//Parse JSON manifest with route information.
+	try {
+		logReport(l, "Parsing JSON file");
+		appdata=DeserializeJSON(jsonMfst);
+		logReport(l, "Success");
+	}
+	catch (any e) {
+		render_page(status=500, errorMsg=ToString("Deserializing data.json failed"), stackTrace=e);
+		abort;
+	}
+
+	//Check that JSON manifest contains everything necessary.
+
+
 	//writedump(appscope);
 	/*appscope.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 	mappings = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
@@ -655,7 +780,11 @@ public ColdMVC function init (Struct appscope) {
 	for ( x=1; x<ArrayLen(mappings); x++ )
 		StructInsert(appscope.mappings, ToString("/" & mappings[x]),
 			ToString(appscope.root_dir & mappings[x] & "/"));*/
-	
+
+	//this.location =  
+//writedump(this);
+//abort;
+	this.app = appdata;	
 	return this;
 }
 
