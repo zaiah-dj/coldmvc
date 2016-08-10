@@ -82,8 +82,27 @@ do
 		shift
 		DIR="$1"
 	;;
+	-d|--datasource)
+		shift
+		DATASOURCE="$1"
+	;;
+	-t|--rootdir)
+		shift
+		ROOTDIR="$1"
+	;;
+	-n|--name)
+		shift
+		NAME="$1"
+	;;
+	-u|--update)
+		DO_UPDATE=1
+		shift
+		DIR="$1"
+	;;
 	-r|--remove)
 		DO_REMOVE=1
+		shift
+		DIR="$1"
 	;;
 	-l|--list-instances)
 		DO_LIST=1
@@ -139,6 +158,13 @@ then
 	#[ ${DIR:0:1} != '/' ] && [ ! -d `dirname $DIR` ] && die "Source directory does not exist."
 	#[ ${DIR:0:1} == '/' ] && [ ! -d $DIR ] && die "Source directory does not exist."
 
+	#Also die if no ROOTDIR was specified.
+	[ -z $ROOTDIR ] && die "No root directory specified." 
+
+	#Also die if no ROOTDIR was specified.
+	#[ -z $NAME ] && die "No root directory specified." 
+	DATASOURCE=${DATASOURCE:-""}
+
 	#Get the realpath
 	DIR=`realpath $DIR`
 
@@ -149,10 +175,10 @@ then
 	fi
 
 	#Make all directories
-	mkdir -p $DIR/{app,db,assets,files,sql,views} || echo "Failed to make new directory"
+	mkdir -p $DIR/{app,assets,db,files,sql,views} || echo "Failed to make new directory"
 
 	#Copy the framework files into the root of the new folder. (should have been links)
-	cp $SRC/coldmvc.cfc $DIR/coldmvc.cfc
+	ln $SRC/coldmvc.cfc $DIR/coldmvc.cfc
 
 	#Copy the rest of these because they may be heavily modified.
 	cp $SRC/4xx-view.css $DIR/4xx-view.css
@@ -170,12 +196,19 @@ then
 	if [ ! -z $LOAD_JSON ]
 	then
 		printf "" > /dev/null
+
+		#Create ORM files (these can be done at any time)	
+
+		#Create resource files
+
+		#Create basic view files from some template somewhere
 	else
+		#Set up the data file after setup.
 		cp $SRC/data.json $DIR/data.json
+		sed -i "{ s#<name>#$NAME#; s#<web>#$ROOTDIR#; s#<datasource>#$DATASOURCE#; }" $DIR/data.json
 	fi
-	#Create ORM files (these can be done at any time)	
-	#Create basic view files from some template somewhere
 fi
+
 
 if [ ! -z $DO_ORM ]
 then
@@ -186,6 +219,6 @@ fi
 
 if [ ! -z $DO_REMOVE ] 
 then 
-printf "">2/dev/null
+	rm -rf $DIR
 fi
 
