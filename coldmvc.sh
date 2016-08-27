@@ -63,6 +63,7 @@ Usage: ./$PROGRAM
 -c, --create <arg>            Create a new instance.
 -r, --remove <arg>            Remove an instance.
 -l, --list-instances          List info about instances.
+-t, --root-dir                Create a root directory.
 -v, --verbose                 Be verbose in output.
 -h, --help                    Show this help and quit.
 EOF

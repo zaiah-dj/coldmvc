@@ -31,9 +31,6 @@ install:
 	
 
 uninstall:
-	-rm -rf $(PREFIX)/lib/lib$(NAME).a
-	-rm -rf $(PREFIX)/lib/lib$(NAME).so
-	-rm -rf $(PREFIX)/lib/lib$(NAME).dll
 	-rm -f $(PREFIX)/include/$(NAME).h
 	-rm -rf $(PREFIX)/include/$(NAME)
 
