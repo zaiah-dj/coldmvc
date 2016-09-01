@@ -714,7 +714,8 @@ function onApplicationStart() {
 	}
 	
 	return true;
-}*/
+}
+*/
 
 
 
