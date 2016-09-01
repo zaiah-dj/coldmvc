@@ -11,9 +11,22 @@ TODO:
 /*Other directories*/
 this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 
-this.arrayMappings = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
+this.current  = getCurrentTemplatePath();
 
-this.Mappings = {
+/*List of app folder names that should always be disallowed by an HTTP client*/
+this.arrayconstantmap = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
+
+/*Path seperator per OS type*/
+this.pathsep = iif(server.os.name eq "UNIX", de("/"), de("\")); 
+
+/*http*/
+this.parser  = { };
+
+/*Defines a list of resources that we can reference without naming static resources*/
+this.action  = { };
+
+/*A list of self-contained mappings since Application.cfc seems to have myriad issues with this*/
+this.constantmap = {
 	"/"           = this.root_dir & "/",
 	"/app"        = this.root_dir & "app/",
 	"/assets"     = this.root_dir & "assets/",
@@ -25,25 +38,16 @@ this.Mappings = {
 	"/views"      = this.root_dir & "views/"
 };
 
+/*Struct for pre and post functions when generating webpages*/
+this.functions  = StructNew();
+
 /*Create ORM files*/
+//...
 
-/*Parse the JSON files*/
-
-/*???*/
-
-/*Create an instance via a web interface*/
-
-/*Admin interface?*/
-function run_something() {
-	/*Loop through all the views in the directory*/
-	/*See all the info for it.*/	
-}
-
-
-/*....*/
+/*Handle file uploads*/
 public Struct function upload_file (String formField, String mimetype) {
 	//Create a file name on the fly.
-	fp = this.Mappings["/files"]; 
+	fp = this.constantmap["/files"]; 
 	fp = ToString(Left(fp, Len(fp) - 1)); 
 	
 	//Upload it.	
@@ -51,14 +55,49 @@ public Struct function upload_file (String formField, String mimetype) {
 		fp            /*destination*/,
 		formField     /*Element from form to write*/,
 		"",           /*No mimetype limit*/
-		"MakeUnique"  /*file name overwrite function*/);
+		"MakeUnique"  /*file name overwrite function*/
+	);
 	
 	//This ought to be some random name.
 	//randstr(16) & "<file extension>";
-
 	//writedump(a);abort;
+
 	//Return a big struct full of all file data.
 	return a;
+}
+
+
+
+/*A better includer*/
+public function _include (Required String where, Required String name) {
+	//Search through each type to make sure that it's really a valid application endpoint
+	match = false;	
+	for (x in this.arrayconstantmap)
+		if (x == where) match = true;
+
+	//Die with a 500 error if nothing was found.	
+	if (!match) {
+		render_page(
+			status=500, 
+			errorMsg=ToString("A function requested the page " & name & " in the folder " & 
+				this.root_dir & where & ", but that folder does not exist or is not readable by the server user."));
+		abort;
+	}
+
+	//Include the page and make it work
+	include ToString(where & this.pathsep & name & ".cfm");
+}
+
+
+/*"Assimilate" the query into the model*/
+public Struct function assimilate (Required Struct model, Required Query query) {
+	_columnNames=ListToArray(query.columnList);
+	if (query.recordCount eq 1) {
+		for (mi=1; mi lte ArrayLen(_columnNames); mi++) {
+			StructInsert(model, LCase(_columnNames[mi]), query[_columnNames[mi]][1], "false");
+		}
+	}
+	return model;
 }
 
 
@@ -114,7 +153,7 @@ public Boolean function isSetNull (Query q) {
 		<cfif status eq 404>
 			<cfset status_code = status>
 			<cfset status_message = "Page Not Found">
-			<cfinclude template="/views/4xx-view.cfm">
+			<cfinclude template="std/4xx-view.cfm">
 		<cfelse>
 			<cfset status_code = status>
 			<cfset status_message = "Internal Server Error">
@@ -124,19 +163,28 @@ public Boolean function isSetNull (Query q) {
 			<cfif isDefined("stackTrace")>
 				<cfset exception = "#stackTrace#">
 			</cfif>
+			<!---
 			<cfinclude template="/views/5xx-view.cfm">
+			<cfset stat=_include(where = "views", name = "5xx-view")>
+			<cfinclude template="views/5xx-view.cfm">
+			--->
+			<cfinclude template="std/5xx-view.cfm">
 		</cfif>
 
 	<cfelse>
 		<!--- Now render the page --->
 		<cfif #check_deep_key(appdata, "routes", resource_name, "content-type")#>
+			<cfinclude template="std/other_mime.cfm">
+		<!---
 			<cfcontent type="appdata.routes[resource_name]['content-type']">
 			<cfoutput>#content#</cfoutput>
-
+			--->
 		<cfelse>
-
+			<cfinclude template="std/text_html.cfm">
+		<!---
 			<cfcontent type="text/html">
 			<cfoutput>#content#</cfoutput>
+			--->
 		</cfif>
 
 	</cfif>
@@ -228,7 +276,7 @@ function logReport (Required String logstring, Required String message) {
 
 
 public Boolean function check_file (Required String mapping, Required String file) {
-	if (FileExists(this.Mappings[ToString("/" & mapping)] & file & ".cfm"))
+	if (FileExists(this.constantmap[ToString("/" & mapping)] & file & ".cfm"))
 		return 1; 
 	return 0;
 }
@@ -320,11 +368,13 @@ function make_index (ColdMVC ColdMVCInstance) {
 	variables.model   = StructNew();
 	variables.data    = ColdMVCInstance.app;
 	variables.db      = ColdMVCInstance.app.data;
-	
+
+
 	//Find the right resource.
 	try {
 		logReport(l, "Evaluating URL route");
 		resource_name = resourceIndex(name=cgi.script_name, ResourceList=appdata);
+		variables.data.loaded = resource_name; 
 
 		//Send a 404 page and be done if this resource was not found.
 		if (resource_name eq "0") {
@@ -354,6 +404,9 @@ function make_index (ColdMVC ColdMVCInstance) {
 		abort;
 	}
 
+	
+	// Evaluate any pre functions (not sure what these would be yet)
+
 
 	// Evaluate the resource or die trying.
 	try {
@@ -364,27 +417,30 @@ function make_index (ColdMVC ColdMVCInstance) {
 		if (check_deep_key(appdata, "routes", resource_name, "model")) { 
 			writeoutput("Evaluate alternative mapped to route name.");
 			addlError = "The file titled '" & appdata.routes[resource_name].model & ".cfm' does not exist in app/";
-			include ToString("/app/" & appdata.routes[resource_name].model & ".cfm"); 
+			//include ToString("/app/" & appdata.routes[resource_name].model & ".cfm"); 
+
+			_include(where = "app", name = appdata.routes[resource_name].model); 
 		}
 
-			
 	//	else if (StructKeyExists(appdata, "routes")) {
 		else if (check_deep_key(appdata, "routes", resource_name) && StructIsEmpty(appdata.routes[resource_name])) {
 			writeoutput("Evaluate route name.");
 			addlError = "The file titled '" & resource_name & ".cfm' does not exist in app/.";
-			include ToString("/app/" & resource_name & ".cfm"); 
+			//include ToString("/app/" & resource_name & ".cfm"); 
+			_include (where = "app", name = resource_name); 
 		}
 		
 		else {
 			//writeoutput("Evaluate default.");
-			//Check that coldmvc.default has been defined
+			//Check that coldmvc.default() has been defined
 			if (structKeyExists(this, "default")) {
 				writeoutput("Evaluating this.default().");
 				this.default();
 			}
 			else if (check_file("app", "default"))	{
 				writeoutput("Evaluating app/default.cfm.");
-				include ToString("/app/" & 'default.cfm');
+			//	include ToString("/app/" & 'default.cfm');
+				_include (where = "app", name = "default"); 
 			}
 			else {
 				render_page(status=500, errorMsg="<p>One of two situations have happened.  Either a:</p><li>default.cfm file was not found in <dir>/app</li><li>or the function 'application.default' is not defined.</li>" );
@@ -399,6 +455,7 @@ function make_index (ColdMVC ColdMVCInstance) {
 		abort;
 	}
 
+
 	//Then parse the template
 	try {
 		logReport(l, "Evaluating view for resource");
@@ -408,26 +465,53 @@ function make_index (ColdMVC ColdMVCInstance) {
 			//Check if something called view exists first	 
 			if (check_deep_key(appdata, "routes", resource_name, "view")) {
 				writeoutput("Loading alternative view '" & appdata.routes[resource_name].view & "' mapped to route name.");
-				include ToString("/views/" & appdata.routes[resource_name].view & ".cfm"); 
+				//include ToString("/views/" & appdata.routes[resource_name].view & ".cfm"); 
+				_include (where = "views", name = appdata.routes[resource_name].view); //& ".cfm"); 
 			}
 			else if (check_deep_key(appdata, "routes", resource_name) && StructIsEmpty(appdata.routes[resource_name])) {
 				writeoutput("Load view with same name as route.");
-				include ToString("/views/" & resource_name & ".cfm"); 
+				//include ToString("/views/" & resource_name & ".cfm"); 
+				_include (where = "views" , name = resource_name); //& ".cfm"); 
 			}
 			//Then check if it's blank, and load itself
 			else {
 				writeoutput("Load default route.");
-				include "/views/default.cfm"; 
+				//include "/views/default.cfm"; 
+				_include (where = "views", name = "default");
 			}
 		}
 		logReport(l, "Success");
-		render_page(content=cms.content, errorMsg="none");
+		//render_page(content=cms.content, errorMsg="none");
 	}
 	catch (any e) {
 		render_page(status=500, errorMsg=ToString("Error in parsing view."), stackTrace=e);
+		abort;
+	}
+
+
+	// Evaluate any post functions (not sure what these would be yet)
+	if (check_deep_key(appdata, "post") && !check_deep_key(appdata, "routes", resource_name, "content-type")) {
+		try {
+			logReport(l, "Evaluating route for post hook");
+			
+			//Save content to make it easier to serve alternate mimetypes.
+			
+			logReport(l, "Success");
+			render_page(content=cms.content, errorMsg="none");
+			abort;
+		}
+		catch (any e) {
+			render_page(status=500, errorMsg=ToString("Error in parsing view."), stackTrace=e);
+		}
+	}
+	else {
+		render_page(content=cms.content, errorMsg="none");
+		abort;
 	}
 }
 </cfscript>
+
+
 
 <cffunction name="redirect_on_fail"
 >
@@ -714,8 +798,7 @@ function onApplicationStart() {
 	}
 	
 	return true;
-}
-*/
+}*/
 
 
 
@@ -744,6 +827,13 @@ public function load (String dir) {
 public ColdMVC function init (Struct appscope) {
 	//Catch log errors with this.
 	l="";
+
+	//Add either pre or post
+	for (i in appscope) {
+
+	}	
+
+
 	//Load JSON manifest with route information.
 	try {
 		logReport(l, "Loading JSON file");
@@ -768,24 +858,17 @@ public ColdMVC function init (Struct appscope) {
 	}
 
 	//Check that JSON manifest contains everything necessary.
-
-
-	//writedump(appscope);
-	/*appscope.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
-	mappings = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
-
-	if (!StructKeyExists(appscope, "Mappings"))
-		appscope["Mappings"] = StructNew();
-
-	//StructInsert(appscope, "/", appscope.root_dir & "/");
-	for ( x=1; x<ArrayLen(mappings); x++ )
-		StructInsert(appscope.mappings, ToString("/" & mappings[x]),
-			ToString(appscope.root_dir & mappings[x] & "/"));*/
-
-	//this.location =  
-//writedump(this);
-//abort;
 	this.app = appdata;	
+
+	//Fill the rest of the parser structure with stuff
+	/*this.parser.href          = cgi.path_name;
+	this.parser.hostname      = cgi.path_name;
+	this.parser.port          = cgi.path_name;
+	this.parser.pathname      = cgi.path_info;
+	this.parser.search        = cgi.path_name;
+	//this.parser.at_home       = iif(cgi.path_name;
+	*/
+
 	return this;
 }
 

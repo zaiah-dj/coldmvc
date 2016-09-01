@@ -146,8 +146,8 @@ esac
 
 if [ ! -z $DO_LIST ]  
 then 
-#Configuration is in /etc.  More than likely a SQL db with your stuff...
-printf "">2/dev/null
+	#Configuration is in /etc.  More than likely a SQL db with your stuff...
+	printf "">2/dev/null
 fi
 
 
@@ -176,31 +176,29 @@ then
 	fi
 
 	#Make all directories
-	mkdir -p $DIR/{app,assets,db,files,sql,views} || echo "Failed to make new directory"
+	mkdir -p $DIR/{app,assets,db,files,sql,std,views} || echo "Failed to make new directory"
 
 	#Copy the framework files into the root of the new folder. (should have been links)
 	ln $SRC/coldmvc.cfc $DIR/coldmvc.cfc
 
 	#Copy the rest of these because they may be heavily modified.
-	cp $SRC/4xx-view.css $DIR/4xx-view.css
-	cp $SRC/5xx-view.css $DIR/5xx-view.css
-	cp $SRC/4xx-view.cfm $DIR/views/4xx-view.cfm
-	cp $SRC/5xx-view.cfm $DIR/views/5xx-view.cfm
+	#cp $SRC/5xx-view.css $DIR/5xx-view.css
 	cp $SRC/Application.cfc $DIR/Application.cfc
 	cp $SRC/index.cfm $DIR/index.cfm
+	cp $SRC/{4xx,5xx}-view.css $DIR/
+	cp $SRC/failure.cfm $DIR/failure.cfm
+	cp $SRC/{4xx,5xx,admin,html,mime}-view.cfm $DIR/std/
 	touch $DIR/{app,views}/default.cfm
-	touch $DIR/data.json
-	touch $DIR/index.cfm
 
 	#Create data.json or data.cfm (probably data.json)
+	touch $DIR/data.json
 	[ ! -z $LOAD_JSON ] && [ ! -f $JSON ] && die "JSON not specified." 
 	if [ ! -z $LOAD_JSON ]
 	then
 		printf "" > /dev/null
+		#Create resource files
 
 		#Create ORM files (these can be done at any time)	
-
-		#Create resource files
 
 		#Create basic view files from some template somewhere
 	else
