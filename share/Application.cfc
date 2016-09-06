@@ -1,8 +1,9 @@
-<!---
-<!--- All Application.cfc rules should go before the next line. --->
-<!--- DO NOT DELETE THE NEXT LINE ---> 
---->
-<cfscript>
+/*
+ * All Application.cfc rules should go before the next line.
+ * DO NOT DELETE THE NEXT LINE
+ *
+ */
+component {
 	function onRequestStart (string Page) {
 		//application.data = DeserializeJSON(FileRead(this.jsonManifest, "utf-8"));
 		if (structKeyExists(url, "reload")) {
@@ -12,10 +13,13 @@
 
 	function onRequest (string targetPage) {
 		try {
-			include arguments.targetPage;
+			//include arguments.targetPage;
+			include "index.cfm";
 		} catch (any e) {
 			//handle exception
-			include "failure.cfm";
+			status_code = 404;
+			status_message = "Page does not exist.";
+			include "std/4xx-view.cfm";
 		}
 	}
 
@@ -24,7 +28,7 @@
 		include "failure.cfm";
 		/*
 		try { }
-		catch {[type] exception) {}
+		catch ([type] exception) {}
 		finally { }
 		*/
 
@@ -39,4 +43,4 @@
 	function onMissingTemplate (string Page) {
 		include "index.cfm";
 	}
-</cfscript>
+}

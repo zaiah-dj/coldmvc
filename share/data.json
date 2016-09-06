@@ -1,5 +1,6 @@
 {
 	"datasource": "<datasource>",
+	"base":       "<base>",
 	"Home":       "<web>",
 	"name":       "<name>",
 	"data":       {},

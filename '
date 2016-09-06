@@ -166,9 +166,12 @@ then
 		mkdir -p $DIR || die "Failed to create directory '$DIR'."
 	fi	
 
-	#Get the realpath, set a datasource
-	DIR=`realpath $DIR`
+	#Also die if no ROOTDIR was specified.
+	#[ -z $NAME ] && die "No root directory specified." 
 	DATASOURCE=${DATASOURCE:-""}
+
+	#Get the realpath
+	DIR=`realpath $DIR`
 
 	#Set a name
 	if [ ! -z $NAME ] 

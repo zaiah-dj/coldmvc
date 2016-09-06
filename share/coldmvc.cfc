@@ -68,6 +68,33 @@ public Struct function upload_file (String formField, String mimetype) {
 }
 
 
+public Query function jsonToQuery(String json) {
+	/*Only goes one level deep.*/
+	dj  = DeserializeJSON(json);
+	aa  = ArrayNew(1);
+
+	/*Throw an exception (sigh), when the JSON given isn't able to be parsed by CF*/
+	if (ArrayLen(dj) > 0)
+		for (s in dj[1])
+			ArrayAppend(aa, s);
+	else
+		throw("JSON is malformed");
+
+	/*Create an array of all the elements*/
+	ll  = ArrayToList(aa);
+	qq  = QueryNew(ArrayToList(aa));
+
+	/*Create a query out of the JSON*/
+	for (i in dj) {
+		QueryAddRow (qq);
+		for (ii=1; ii <= ArrayLen(aa); ii++) {
+			QuerySetCell(qq, aa[ii],  i[aa[ii]]);
+		}
+	}
+
+	return qq;
+}
+
 
 /*A better includer*/
 public function _include (Required String where, Required String name) {
@@ -357,6 +384,47 @@ public String function randnum (n) {
 	return tr;
 }
 
+/*Find the index of a resource if it exists.  Return 0 if it does not.*/
+public String function resourceIndex (String name, Struct ResourceList) {
+	//Create an array of the current routes.
+	if (!structKeyExists(ResourceList, "routes"))
+		return "default";
+
+	//Handle no routes
+	if (StructIsEmpty(ResourceList.routes))
+		return "default";
+
+	//Check for resources in GET or the CGI.stringpath 
+	if (StructKeyExists(ResourceList, "handler") && CompareNoCase(ResourceList.handler, "get") == 0) {
+		if (isDefined("url") and isDefined("url.action"))
+			name = url.action; 
+		else {
+			if (StructKeyExists(ResourceList, "base"))
+				name = Replace(name, ResourceList.base & "/", "");
+		}
+	}
+	else {
+		//Cut out only routes that are relevant to the current application.
+		if (StructKeyExists(ResourceList, "base"))
+			name = Replace(name, ResourceList.base & "/", "");
+	}
+		
+	//Handle the default route if ResourceList is not based off of URL
+	if (!StructKeyExists(ResourceList, "handler") && name == "index.cfm")
+		return "default";
+
+	//If you made it this far, search for the requested endpoint
+	for (x in ResourceList.routes) {
+		if (name == x) 
+			return x;
+		if (Replace(name, ".cfm", "") == x)
+			return x;
+		//Replace the base
+	}
+
+	//You probably found nothing, so either do 404 or some other stuff.
+	return ToString(0);
+}
 
 /* ----------------------------------------------- *
  * ----------------------------------------------- */
@@ -374,7 +442,8 @@ function make_index (ColdMVC ColdMVCInstance) {
 	//Find the right resource.
 	try {
 		logReport(l, "Evaluating URL route");
-		resource_name = resourceIndex(name=cgi.script_name, ResourceList=appdata);
+		resource_name = resourceIndex(name=cgi.script_name, ResourceList=ColdMVCInstance.app);
+		ColdMVCInstance.app.resource = resource_name;
 		variables.data.loaded = resource_name; 
 
 		//Send a 404 page and be done if this resource was not found.
@@ -685,47 +754,6 @@ public query function wrapError(e) {
 }
 
 
-/*Find the index of a resource if it exists.  Return 0 if it does not.*/
-public String function resourceIndex (String name, Struct ResourceList) {
-	//Create an array of the current routes.
-	if (!structKeyExists(ResourceList, "routes"))
-		return "default";
-
-	//Handle no routes
-	if (StructIsEmpty(ResourceList.routes))
-		return "default";
-
-	//Check for resources in GET or the CGI.stringpath 
-	if (StructKeyExists(ResourceList, "handler") && CompareNoCase(ResourceList.handler, "get") == 0) {
-		if (isDefined("url") and isDefined("url.action"))
-			name = url.action; 
-		else {
-			if (StructKeyExists(ResourceList, "base"))
-				name = Replace(name, ResourceList.base & "/", "");
-		}
-	}
-	else {
-		//Cut out only routes that are relevant to the current application.
-		if (StructKeyExists(ResourceList, "base"))
-			name = Replace(name, ResourceList.base & "/", "");
-	}
-		
-	//Handle the default route if ResourceList is not based off of URL
-	if (!StructKeyExists(ResourceList, "handler") && name == "index.cfm")
-		return "default";
-
-	//If you made it this far, search for the requested endpoint
-	for (x in ResourceList.routes) {
-		if (name == x) 
-			return x;
-		if (Replace(name, ".cfm", "") == x)
-			return x;
-		//Replace the base
-	}
-
-	//You probably found nothing, so either do 404 or some other stuff.
-	return ToString(0);
-}
 
 /*Function returns a query.  NULL if nothing... */
 public function execQuery (String qf, Boolean dump) { 
@@ -762,66 +790,6 @@ public function execQuery (String qf, Boolean dump) {
 	
 	return sql;
 }
-
-
-/*
-function onApplicationStart() {
-	if (!FileExists(this.jsonManifest)) {
-		application.cms = {};
-		application.data = {};
-		//application.path = cgi.path_info;
-		application.load = load;
-
-		//Until I get this running as a component, I have to do this...
-		application.resourceIndex = resourceIndex;
-		application.memberOf = memberOf;
-		application.wrapError = wrapError;
-		application.dynquery = dynquery;
-		application.redirectOnFail = redirect_on_fail;
-		application.DateTimeFormat = DateTimeFormat;
-		application.execQuery = execQuery;
-		application.check_deep_key = check_deep_key;
-
-	}
-	else {
-		application.cms = {};
-		application.data = DeserializeJSON(FileRead(this.jsonManifest, "utf-8"));
-		//application.path = Replace(cgi.path_info, application.data.base & "/", "");
-		application.load = load;
-		application.resourceIndex = resourceIndex;
-		application.memberOf = memberOf;
-		application.wrapError = wrapError;
-		application.dynquery = dynquery;
-		application.redirectOnFail = redirect_on_fail;
-		application.DateTimeFormat = DateTimeFormat;
-		application.execQuery = execQuery;
-		application.check_deep_key = check_deep_key;
-	}
-	
-	return true;
-}*/
-
-
-
-/*...
-public function load (String dir) {
-	v = ExpandPath(dir);
-	//writedump(v); writedump( DirectoryList(v) );
-
-	for (x in DirectoryList(v)) {
-		w = GetFileFromPath(x);
-		str = "/"& dir & "/" & w;
-
-		if (w == "load.cfm" || Right(w,3) != "cfm")
-			continue;
-		try {
-			include str;
-		} 
-		catch (any e) {
-			writedump(e);
-		}
-	}
-}*/
 
 
 /*Initialize some stuff*/
