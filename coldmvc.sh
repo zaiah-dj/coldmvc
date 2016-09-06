@@ -184,9 +184,8 @@ then
 	#Copy the rest of these because they may be heavily modified.
 	#cp $SRC/5xx-view.css $DIR/5xx-view.css
 	cp $SRC/Application.cfc $DIR/Application.cfc
-	cp $SRC/index.cfm $DIR/index.cfm
+	cp $SRC/{failure,index}.cfm $DIR/
 	cp $SRC/{4xx,5xx}-view.css $DIR/
-	cp $SRC/failure.cfm $DIR/failure.cfm
 	cp $SRC/{4xx,5xx,admin,html,mime}-view.cfm $DIR/std/
 	touch $DIR/{app,views}/default.cfm
 

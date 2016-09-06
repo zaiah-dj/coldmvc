@@ -11,6 +11,7 @@ TODO:
 /*Other directories*/
 this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 
+/*...*/
 this.current  = getCurrentTemplatePath();
 
 /*List of app folder names that should always be disallowed by an HTTP client*/
@@ -19,7 +20,7 @@ this.arrayconstantmap = [ "app", "assets", "bindata", "db", "files", "sql", "std
 /*Path seperator per OS type*/
 this.pathsep = iif(server.os.name eq "UNIX", de("/"), de("\")); 
 
-/*http*/
+/*Parser*/
 this.parser  = { };
 
 /*Defines a list of resources that we can reference without naming static resources*/
@@ -174,13 +175,13 @@ public Boolean function isSetNull (Query q) {
 	<cfelse>
 		<!--- Now render the page --->
 		<cfif #check_deep_key(appdata, "routes", resource_name, "content-type")#>
-			<cfinclude template="std/other_mime.cfm">
+			<cfinclude template="std/mime-view.cfm">
 		<!---
 			<cfcontent type="appdata.routes[resource_name]['content-type']">
 			<cfoutput>#content#</cfoutput>
 			--->
 		<cfelse>
-			<cfinclude template="std/text_html.cfm">
+			<cfinclude template="std/html-view.cfm">
 		<!---
 			<cfcontent type="text/html">
 			<cfoutput>#content#</cfoutput>
@@ -464,18 +465,18 @@ function make_index (ColdMVC ColdMVCInstance) {
 		savecontent variable="cms.content" {
 			//Check if something called view exists first	 
 			if (check_deep_key(appdata, "routes", resource_name, "view")) {
-				writeoutput("Loading alternative view '" & appdata.routes[resource_name].view & "' mapped to route name.");
+				//writeoutput("Loading alternative view '" & appdata.routes[resource_name].view & "' mapped to route name.");
 				//include ToString("/views/" & appdata.routes[resource_name].view & ".cfm"); 
 				_include (where = "views", name = appdata.routes[resource_name].view); //& ".cfm"); 
 			}
 			else if (check_deep_key(appdata, "routes", resource_name) && StructIsEmpty(appdata.routes[resource_name])) {
-				writeoutput("Load view with same name as route.");
+				//writeoutput("Load view with same name as route.");
 				//include ToString("/views/" & resource_name & ".cfm"); 
 				_include (where = "views" , name = resource_name); //& ".cfm"); 
 			}
 			//Then check if it's blank, and load itself
 			else {
-				writeoutput("Load default route.");
+				//writeoutput("Load default route.");
 				//include "/views/default.cfm"; 
 				_include (where = "views", name = "default");
 			}
@@ -488,17 +489,18 @@ function make_index (ColdMVC ColdMVCInstance) {
 		abort;
 	}
 
-
 	// Evaluate any post functions (not sure what these would be yet)
-	if (check_deep_key(appdata, "post") && !check_deep_key(appdata, "routes", resource_name, "content-type")) {
+	if (check_deep_key(appdata, "master-post") && !check_deep_key(appdata, "routes", resource_name, "content-type")) {
 		try {
 			logReport(l, "Evaluating route for post hook");
 			
 			//Save content to make it easier to serve alternate mimetypes.
+			savecontent variable = "post_content" {
+				this.post();
+			}
 			
 			logReport(l, "Success");
-			render_page(content=cms.content, errorMsg="none");
-			abort;
+			render_page(content=post_content, errorMsg="none");
 		}
 		catch (any e) {
 			render_page(status=500, errorMsg=ToString("Error in parsing view."), stackTrace=e);
@@ -506,7 +508,6 @@ function make_index (ColdMVC ColdMVCInstance) {
 	}
 	else {
 		render_page(content=cms.content, errorMsg="none");
-		abort;
 	}
 }
 </cfscript>
@@ -831,8 +832,11 @@ public ColdMVC function init (Struct appscope) {
 	//Add either pre or post
 	for (i in appscope) {
 
-	}	
+	}
 
+	if (StructKeyExists(appscope, "post")) {
+		this.post = appscope.post;
+	}
 
 	//Load JSON manifest with route information.
 	try {
