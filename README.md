@@ -1,54 +1,50 @@
-Installation on Linux
----------------------
+<h2>ColdMVC</h2>
+
+Summary
+-------
+<p>
+ColdMVC is a simple framework for ColdFusion and Lucee application servers.   It is supposed to facilitate an MVC model within ColdFusion applications and make it a bit easier to enforce "seperation of concerns".
+</p>
 
 
-Installation on Cygwin 
-----------------------
-
-
-Installation on Windows
------------------------
-
+Caveats
+-------
+<p>
+Running on Windows is not fun or easy right now and will involve a lot of manual work. OSX has not been tested yet.  Linux users can clone this repository and run the script titled coldmvc.sh to get started.   
+</p>
+ 
 
 Setting up New Projects
 -----------------------
-a)
-	Use all of these gnarly shell scripts...
-
-b)
-	Use a C program (with gnarly Windows extensions)
-
-
-How Does This Madness Work?
----------------------------
 <p>
-A default data.json contains all of your application's static information.  It also contains your app's routing table.  An example is shown below: 
+New projects can be setup using a command similar to the following.
+<pre>
+./coldmvc.sh -c /path/to/coldfusion/webroot -t '/approot'
+</pre>
 </p>
 
-<code>
+<p>
+'/approot' refers to a directory underneath your ColdFusion or Lucee webroot.   The directory does not need to exist as ColdMVC will create it for you.  After the command runs successfully, you can access the new application at:
+<a>http://localhost:<your ColdFusion / Lucee port number>/approot</a>
+</p>
+
+
+How Does This Work?
+-------------------
+<p>
+ColdMVC uses one file for it's configuration.  So learning the in's and out's of the file titled 'data.json' will help you get much faster at building apps to do what you want.
+</p>
+
+<p>
+After a project is successfully created, a data.json file will be at the root of your application.  Within this file is your app's routing table, a default datasource, and the name of the app (which is used as the default HTML title).  An example is shown below: 
+</p>
+
+<pre>
 {
 	"datasource": "CMSCopy",
 	"home":       "http://localhost:8300",
 	"base":       "/cms7",
 	"name":       "TestApp",
-	"css":         [
-		"/assets/css/cms.css",
-		"/assets/css/reset.css",
-		"/assets/css/responsive-min-479.css",
-		"/assets/css/responsive-480-767.css",
-		"/assets/css/responsive-768-1023.css",
-		"/assets/css/responsive-1024-max.css",
-		"/assets/css/test.css"
-	],
-	"js":          [
-		"/assets/js/cms.js",
-		"/assets/js/jquery-1.12.3.min.js",
-		"/assets/js/mousetrap.min.js",
-		"/assets/js/three.min.js"
-	],
-	"handler":    "get",
-	"template":   "frank",
-	"fallback":   "failure.cfm",
 	"routes":     {
 		"approve":  { "page": "index", "data": "jordans" },
 		"edit":     { "page": "index", "data": "jordans" },
@@ -57,20 +53,9 @@ A default data.json contains all of your application's static information.  It a
 		"version":  { "page": "index", "data": "jordans", "content-type": "text/html" }
 	}
 }
-</code>
+</pre>
 
-<p>
-A line-by-line breakdown of this file looks as follows:
-	<table>
-	<tr>
-		<td>datasource</td>
-		<td>Name of the data source.</td>
-	</tr>
-	
-	</table>
-
-</p>
-
+<!--
 <p>
 Routes can be interpreted one of four ways:
 
@@ -104,3 +89,4 @@ So, for example, the routing table with the name 'zaza':
 
 will use default.cfm in app/ to create logic.  And use default.cfm in views/ to create views of the data.
 </p>
+-->
