@@ -28,7 +28,13 @@ New projects can be setup using a command similar to the following.
 <a>http://localhost:<your ColdFusion / Lucee port number>/approot</a>
 </p>
 
+How Does This Work?
+-------------------
+<p>
+More complete documentation on how to get ColdMVC up and running will be coming soon.  I am working hard to get a more stable distribution method underway, so please be patient!
+</p>
 
+<!--
 How Does This Work?
 -------------------
 <p>
@@ -55,7 +61,6 @@ After a project is successfully created, a data.json file will be at the root of
 }
 </pre>
 
-<!--
 <p>
 Routes can be interpreted one of four ways:
 
