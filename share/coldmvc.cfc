@@ -14,14 +14,14 @@ this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 /*...*/
 this.current  = getCurrentTemplatePath();
 
+/*Will stop code*/
+this.stop_exec = false;
+
 /*List of app folder names that should always be disallowed by an HTTP client*/
 this.arrayconstantmap = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
 
 /*Path seperator per OS type*/
 this.pathsep = iif(server.os.name eq "UNIX", de("/"), de("\")); 
-
-/*Parser*/
-this.parser  = { };
 
 /*Defines a list of resources that we can reference without naming static resources*/
 this.action  = { };
@@ -40,7 +40,6 @@ this.constantmap = {
 };
 
 /*Struct for pre and post functions when generating webpages*/
-this.functions  = StructNew();
 
 /*Create ORM files*/
 //...
@@ -109,7 +108,8 @@ public function _include (Required String where, Required String name) {
 			status=500, 
 			errorMsg=ToString("A function requested the page " & name & " in the folder " & 
 				this.root_dir & where & ", but that folder does not exist or is not readable by the server user."));
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 	//Include the page and make it work
@@ -126,6 +126,22 @@ public Struct function assimilate (Required Struct model, Required Query query) 
 		}
 	}
 	return model;
+}
+
+/* --------------------- *
+ Merge two structs
+ =================
+- merge if both exist
+- merge if just one exists
+- merge append 
+	(check that the types you're trying to append match)
+ * --------------------- */
+public Struct function merge_key_if_exists (Required Struct o, Required Struct n) {
+	for (k in o) {
+		if (StructKeyExists(o, k) && StructKeyExists(n, k))
+			StructInsert(o, k, n[k], true);
+	}
+	return o;
 }
 
 
@@ -434,7 +450,6 @@ function make_index (ColdMVC ColdMVCInstance) {
 
 	//Hackarific dot com
 	variables.coldmvc = ColdMVCInstance;
-	variables.model   = StructNew();
 	variables.data    = ColdMVCInstance.app;
 	variables.db      = ColdMVCInstance.app.data;
 
@@ -449,7 +464,8 @@ function make_index (ColdMVC ColdMVCInstance) {
 		//Send a 404 page and be done if this resource was not found.
 		if (resource_name eq "0") {
 			render_page(status=404, errorMsg=ToString("Page not found."));
-			abort;
+			if (this.stop_exec) 
+				abort;
 		}
 
 		//Load CSS, Javascript and maybe some other stuff once at the beginning
@@ -471,7 +487,8 @@ function make_index (ColdMVC ColdMVCInstance) {
 	}
 	catch (any e) {
 		render_page(status=500, errorMsg=ToString("Locating resource mapping failed"), stackTrace=e);
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 	
@@ -487,8 +504,6 @@ function make_index (ColdMVC ColdMVCInstance) {
 		if (check_deep_key(appdata, "routes", resource_name, "model")) { 
 			writeoutput("Evaluate alternative mapped to route name.");
 			addlError = "The file titled '" & appdata.routes[resource_name].model & ".cfm' does not exist in app/";
-			//include ToString("/app/" & appdata.routes[resource_name].model & ".cfm"); 
-
 			_include(where = "app", name = appdata.routes[resource_name].model); 
 		}
 
@@ -514,15 +529,22 @@ function make_index (ColdMVC ColdMVCInstance) {
 			}
 			else {
 				render_page(status=500, errorMsg="<p>One of two situations have happened.  Either a:</p><li>default.cfm file was not found in <dir>/app</li><li>or the function 'application.default' is not defined.</li>" );
-				abort;
+				if (this.stop_exec) 
+					abort;
 			}
 		}
+
+		//If there is a data model, assimilate what's here into that
+		//model is a default model now, just rewrite...
+		if (!StructIsEmpty(this.model))
+			merge_key_if_exists(model, this.model);
 		logReport(l, "Success");
 	}
 	catch (any e) {
 		//Manually wrap the error template here.
 		render_page(status=500, errorAddl=addlError, errorMsg=ToString("Error at controller page."), stackTrace=e);
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 
@@ -555,7 +577,8 @@ function make_index (ColdMVC ColdMVCInstance) {
 	}
 	catch (any e) {
 		render_page(status=500, errorMsg=ToString("Error in parsing view."), stackTrace=e);
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 	// Evaluate any post functions (not sure what these would be yet)
@@ -797,14 +820,21 @@ public ColdMVC function init (Struct appscope) {
 	//Catch log errors with this.
 	l="";
 
-	//Add either pre or post
-	for (i in appscope) {
+	//If calling remotely, execution will stop when errors are encountered
+	if (StructKeyExists(appscope, "remote"))
+		if (appscope.remote == false) this.stop_exec = true;
 
-	}
+	//Set a function to run before any content is rendered 
+	if (StructKeyExists(appscope, "pre"))
+		this.pre = appscope.pre;
 
-	if (StructKeyExists(appscope, "post")) {
+	//Set a function to run after any content is rendered 
+	if (StructKeyExists(appscope, "post"))
 		this.post = appscope.post;
-	}
+
+	//Initialize a data model from somewhere else...
+	if (StructKeyExists(appscope, "model"))
+		this.model = appscope.model;
 
 	//Load JSON manifest with route information.
 	try {
@@ -814,7 +844,8 @@ public ColdMVC function init (Struct appscope) {
 	}
 	catch (any e) {
 		render_page(status=500, errorMsg="Error reading data.json");
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 
@@ -826,7 +857,8 @@ public ColdMVC function init (Struct appscope) {
 	}
 	catch (any e) {
 		render_page(status=500, errorMsg=ToString("Deserializing data.json failed"), stackTrace=e);
-		abort;
+		if (this.stop_exec) 
+			abort;
 	}
 
 	//Check that JSON manifest contains everything necessary.
@@ -843,6 +875,7 @@ public ColdMVC function init (Struct appscope) {
 
 	return this;
 }
+
 
 </cfscript>
 
