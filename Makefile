@@ -1,9 +1,22 @@
-# cold-mvc 
-include config.mk
+# Build variables
+CFLAGS = -g -Wall -Werror -Wno-unused -Wstrict-overflow -ansi -std=c99 -Wno-deprecated-declarations -O2 -pedantic-errors $(LDDIRS) $(LDFLAGS) $(DFLAGS)
+ARCHIVEDIR=..
+ARCHIVEFMT = gz
+MANPREFIX = ${PREFIX}/share/man
+LDDIRS = -L$(PREFIX)/lib
+LDFLAGS =
+SHARED_LDFLAGS =
+CC = gcc
+PREFIX = /usr/local
+SHARE = $(PREFIX)/share
+BIN = $(PREFIX)/bin
+CONFIG = /etc
+
+# Program variables
 NAME = coldmvc
-SRC = coldmvc.c opt.c lite.c
+SRC = lite.c parsely.c tab.c json.c main.c
 OBJ = ${SRC:.c=.o}
-IGNORE = coldmvc www/*
+IGNORE = archive
 ARCHIVEDIR = ..
 ARCHIVEFILE = $(NAME).`date +%F`.`date +%H.%M.%S`.tar.${ARCHIVEFMT}
 
