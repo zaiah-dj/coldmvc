@@ -28,7 +28,9 @@ install:
 	-cp ./share/*.cfm $(PREFIX)/share
 	-cp ./etc/$(NAME).conf $(CONFIG)/
 #	-sqlite3 $(CONFIG)/$(NAME)_config.db < populate.sql
-	
+
+changelog:
+	-printf ''>/dev/null		
 
 uninstall:
 	-rm -f $(PREFIX)/include/$(NAME).h
