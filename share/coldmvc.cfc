@@ -27,6 +27,7 @@ TODO:
 - Add the ability to redirect on failure depending on some condition in the model
 - Complete the ability to log to other outputs (database, web storage, etc)
 - What kind of task system would work best?
+- Create app scopes as the same name of the file that vars are declared in.  I'm thinking that this would make it easy to follow variables throughout more complex modules.
 
 CHANGELOG>>
 
