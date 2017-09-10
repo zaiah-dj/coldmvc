@@ -307,11 +307,11 @@ CHANGELOG>>
 	{
 		//Hash pass.username
 		puser = hash( p.user, "SHA-384", "UTF-8"/*, 1000*/ );
-		writeoutput( "<br />" & puser );
+		//writeoutput( "<br />" & puser );
 
 		//key
 		key = generateSecretKey( "AES", 256 );
-		writeoutput( "<br />" & key );
+		//writeoutput( "<br />" & key );
 
 		//Hash password
 		ppwd = "";
@@ -781,7 +781,7 @@ CHANGELOG>>
 			//Find an alternate route model first.
 			if (check_deep_key(appdata, "routes", rname, "model")) 
 			{
-				writeoutput("Evaluate alternative mapped to route name.");
+				logReport("Evaluate alternative mapped to route name.");
 
 				//Get the type name
 				ev = checkArrayOrString( appdata.routes[rname], "model" );
@@ -872,19 +872,22 @@ CHANGELOG>>
 					else if ( ev.type == "struct" )
 					{
 						//This is an exception for now...
-						writeoutput( "<br />Views as structs are not yet supported.  Please fix your data.json file." );
+						logReport( "<br />Views as structs are not yet supported.  Please fix your data.json file." );
+						render_page( 
+							status = 500,
+							errorMsg = "Views as structs are not yet supported.  Please fix your data.json file."
+						);
+						abort;
 					}
 				}
 				else if (check_deep_key(appdata, "routes", rname) && StructIsEmpty(appdata.routes[rname]))
 				{
-					logReport( "same name as route");
-					writeoutput("Load view with same name as route.");
+					logReport( "Load view with same name as route." );
 					_include (where = "views" , name = rname); //& ".cfm"); 
 				}
 				//Then check if it's blank, and load itself
 				else {
-						logReport( "default");
-					writeoutput("Load default route.");
+					logReport( "Load default route." );
 					_include (where = "views", name = "default");
 				}
 			}
@@ -968,7 +971,7 @@ CHANGELOG>>
 			//Save the contents of the error message and send that back
 			savecontent variable="errMessage" {
 				err = cfcatch.TagContext[ 1 ];
-				writeoutput( 
+				logReport( 
 					"SQL execution error at file " & 
 					err.template & ", line " & err.Line & "." &
 					cfcatch.message

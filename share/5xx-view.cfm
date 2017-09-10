@@ -9,6 +9,7 @@ STATUS_ERROR_MESSAGE = this.statusErrorMessage;
 <!--- href --->
 <cfif 0>
 	<link rel=stylesheet href="/assets/5xx-view.css" type=text/css>
+<cfelseif 0>
 <cfelse>
  <style type="text/css">
 	html, body, div, span, applet, object, iframe,

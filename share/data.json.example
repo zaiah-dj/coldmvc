@@ -1,10 +1,10 @@
 {
-	"source":     "Toots",
-	"cookie":     "mien_cookie",
-	"base":       "/ferpa3/",
+	"source":     "{{ DATASOURCE }}",
+	"cookie":     "{{ COOKIE }}",
+	"base":       "{{ BASE }}",
 	"Home":       "tmp",
-	"name":       "Ferpa",
-	"title":      "FERPA (Family Educational Rights and Privacy Act )",
+	"name":       "{{ NAME }}",
+	"title":      "{{ TITLE }}",
 	"debug":      0,
 	"master-post":false,
 	"settings":   {
@@ -12,15 +12,9 @@
 		"addLogLine": 0
 	}, 
 	"data":       {
-		"posts":     "post",
-		"content":   "content",
-		"class_rel": "class_rel",
-		"metadata":  "metadata",
-		"users":     "users"
 	},
 	"css":        [ 
-		"zero", 
-		"https://unpkg.com/purecss@0.6.2/build/pure-min", "gallery"  
+		"zero"
 	],
 	"js":         [ "lib", "index" ],
 	"routes":     {
