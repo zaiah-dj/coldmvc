@@ -9,6 +9,15 @@ ARCHIVEFILE = $(NAME).`date +%F`.`date +%H.%M.%S`.tar.${ARCHIVEFMT}
 
 .PHONY: all clean debug echo
 
+
+main:
+	@echo javac coldmvc.java
+	@javac coldmvc.java
+
+run:
+	@java CLI 
+
+
 coldmvc: ${OBJ}
 	@echo CC -o $@ ${OBJ} ${CFLAGS}
 	@${CC} -o $@ ${OBJ} ${CFLAGS}
