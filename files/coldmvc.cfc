@@ -1,3 +1,5 @@
+<!--- <cfcomponent name="ColdMVC"> --->
+
 <cfscript>
 component name = "ColdMVC" {
 /* --------------------------------------------------
@@ -5,7 +7,7 @@ coldmvc.cfc
 -----------
 Author:
 Antonio R. Collins II (ramar.collins@gmail.com)
-Copyright 2016-Present, "Deep909, LLC"
+Copyright 2017, "Deep909, LLC"
 
 Original Author Date:
 Tue Jul 26 07:26:29 2016 -0400
@@ -25,13 +27,8 @@ TODO:
 - Add the ability to redirect on failure depending on some condition in the model
 - Complete the ability to log to other outputs (database, web storage, etc)
 - What kind of task system would work best?
-- Create app scopes as the same name of the file that vars are declared in.  I'm thinking that this would make it easy to follow variables throughout more complex modules.
-- Add an option for mock/static data (it goes in db and can be queried)
 
 CHANGELOG>>
-
-
-2017/09/07
 
 2017/09/06
 - Added this comprehensive changelog ;)
@@ -90,30 +87,35 @@ CHANGELOG>>
 - Changes on coldmvc will be marked in CHANGELOG.  Added new views and std/ directory for default templates.   Next step is deserializing JSON and creating the site in less steps.
 
 
+
+
 <<CHANGELOG
 
  * -------------------------------------------------- */
 
-	/*VARIABLES - None of these get a docblock. You really don't need to worry with these*/
 	//Log message
 	this.logString = "";
 	this.dumpload = 1;
 
-	//Other directories
+	/*Other directories*/
 	this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 
+	/*...*/
 	this.current  = getCurrentTemplatePath();
 
-	//Structs that might be loaded from elsewhere go here (and should really be done at startup)
+	/*Structs that might be loaded from elsewhere go here*/
 	this.objects  = { };
 
-	//List of app folder names that should always be disallowed by an HTTP client
+	/*List of app folder names that should always be disallowed by an HTTP client*/
 	this.arrayconstantmap = [ "app", "assets", "bindata", "db", "files", "sql", "std", "views" ];
 
-	//Path seperator per OS type
+	/*Path seperator per OS type*/
 	this.pathsep = iif(server.os.name eq "UNIX", de("/"), de("\")); 
 
-	//Defines a list of resources that we can reference without naming static resources
+	/*Parser*/
+	this.parser  = { };
+
+	/*Defines a list of resources that we can reference without naming static resources*/
 	this.action  = { };
 
 	/*Struct for pre and post functions when generating webpages*/
@@ -133,9 +135,7 @@ CHANGELOG>>
 	};
 
 
-	//<<DOC
 	//List of mimetypes for file processing
-	//DOC
 	this.mimes = {
 		 "text/html" = "html", "html" = "text/html"
 		,"text/html" = "htm", "htm" = "text/html"
@@ -247,10 +247,7 @@ CHANGELOG>>
 	};
 
 
-	/*VARIABLES - None of these get a docblock. You really don't need to worry with these*/
-	//<<DOC
 	//Log messages and return true*
-	//DOC
 	private Boolean function plog (
 		String message,      //Message to log
 		String loc  //Where to write the message
@@ -297,21 +294,16 @@ CHANGELOG>>
 	}
 
 
-	//@title: hashp
-	//@args :
-	//@end
-	//@body :
-	//	Hash function for text strings
-	//@end   
+	//Usernames should always be hashed before being written to database
 	private Struct function hashp( p )
 	{
 		//Hash pass.username
 		puser = hash( p.user, "SHA-384", "UTF-8"/*, 1000*/ );
-		//writeoutput( "<br />" & puser );
+		writeoutput( "<br />" & puser );
 
 		//key
 		key = generateSecretKey( "AES", 256 );
-		//writeoutput( "<br />" & key );
+		writeoutput( "<br />" & key );
 
 		//Hash password
 		ppwd = "";
@@ -325,12 +317,7 @@ CHANGELOG>>
 
 
 
-	//@title: render_page
-	//@args :
-	//@end
-	//@body :
-	//	Hash function for text strings
-	//@end   
+	//Render the output for a page
 	private function render_page ( 
 		Required String   errorMsg  ,  //Error message
 		/*Optional*/ String   errorAddl ,  //Additional error message
@@ -371,12 +358,7 @@ CHANGELOG>>
 
 
 	
-	//@title: logReport 
-	//@args :
-	//@end
-	//@body :
-	//	Will silently log as ColdMVC executes
-	//@end   
+	//Log what's going on
 	private function logReport (Required String message) 
 	{
 		//Throw an error to get access to the exception 
@@ -395,12 +377,7 @@ CHANGELOG>>
 
 
 
-	//@title: checkArrayOrString
-	//@args :
-	//@end
-	//@body :
-	//	Check if a value is an array or string
-	//@end   
+	//Check if a value is an array or string
 	private Struct function checkArrayOrString ( 
 		Required Struct sarg,  //The struct to check
 		Required String key    //The key within the struct to check against
@@ -423,12 +400,7 @@ CHANGELOG>>
 		}
 	}
 
-	//@title: link 
-	//@args :
-	//@end
-	//@body :
-	//	Create links
-	//@end   
+	//Create links
 	public string function link ( /*How do I specify var args???*/ )
 	{
 		//Define spot for link text
@@ -447,12 +419,7 @@ CHANGELOG>>
 
 
 
-	//@title: crumbs 
-	//@args :
-	//@end
-	//@body :
-	//	Create "breadcrumb" link for really deep pages within a webapp. 
-	//@end   
+	//Digest the URL
 	public function crumbs () 
 	{
 		a = ListToArray(cgi.path_info, "/");
@@ -467,12 +434,7 @@ CHANGELOG>>
 
 
 
-	//@title: upload_file 
-	//@args :
-	//@end
-	//@body :
-	//	Handles file uploads
-	//@end   
+	//Handle file uploads
 	public Struct function upload_file (String formField, String mimetype) 
 	{
 		//Create a file name on the fly.
@@ -518,14 +480,11 @@ CHANGELOG>>
 
 
 
-	//@title: _include 
-	//@args :
-	//@end
-	//@body :
-	//	A better includer
-	//@end   
+	//A better includer
 	public function _include (
-		Required String where,  Required String name ) 
+		Required String where, //.... 
+		Required String name   //....
+	 )
 	{
 		//Search through each type to make sure that it's really a valid application endpoint
 		match = false;	
@@ -550,12 +509,7 @@ CHANGELOG>>
 
 
 
-	//@title: assimilate 
-	//@args :
-	//@end
-	//@body :
-	//	Add query content into model
-	//@end   
+	//"Assimilate" the query into the model
 	public Struct function assimilate (
 		Required Struct model, Required Query query) 
 	{
@@ -569,12 +523,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: isSetNull 
-	//@args :
-	//@end
-	//@body :
-	//	Check if a result set is composed of all nulls
-	//@end   
+	//Check if a result set is composed of all nulls
 	public Boolean function isSetNull (Query q) 
 	{
 		columnNames=ListToArray(q.columnList);
@@ -590,12 +539,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: dump_routes 
-	//@args :
-	//@end
-	//@body :
-	//	Dump all routes
-	//@end   
+	//Dump the routes
 	public String function dump_routes ( )
 	{
 		savecontent variable="cms.routeInfo" 
@@ -606,28 +550,16 @@ CHANGELOG>>
 
 
 
-	//@title: check_file 
-	//@args :
-	//@end
-	//@body :
-	//	Check that a file exists?
-	//@end   
-	private Boolean function check_file (
+	//Check that a file exists?
+	public Boolean function check_file (
 		Required String mapping, Required String file) 
 	{
 		return (FileExists(this.constantmap[ToString("/" & mapping)] & file & ".cfm")) ? 1 : 0;
 	}
 
 
-	//@title: render_page
-	//@args :
-	//@end
-	//@body :
-	//	Get database column names
-	//@end   
-	//@note: 
-	//	This breaks in ColdFusion 9
-	//@end   
+	//Get database column names
+	//This breaks in ColdFusion 9
 	public String function get_column_names ( Required String table, /*Optional*/ String dbname )
 	{
 	/*
@@ -647,14 +579,12 @@ CHANGELOG>>
 	}
 
 
-	//@title: setQueryField 
-	//@args :
-	//@end
-	//@body :
-	//	Add fields to a query very easily
-	//@end   
+	//Add fields to a query very easily
 	public function setQueryField (
-		Required Query query, Required String columnName, Required Any fillValue, String columnType )
+		Required Query query, 
+		Required String columnName, 
+		Required Any fillValue, 
+		String columnType )
 	{
 		type=(!StructKeyExists(Arguments, "columnType")) ? "varchar" : Arguments.columnType;
 		QueryAddColumn(query, columnName, type, ArrayNew(1));
@@ -666,12 +596,7 @@ CHANGELOG>>
 
 
 
-	//@title: randstr 
-	//@args :
-	//@end
-	//@body :
-	//	A function to generate random letters.
-	//@end   
+	//A function to generate random letters.
 	public String function randstr ( /*Optional*/ Numeric n )
 	{
 		// make an array instead, and join it...
@@ -683,12 +608,8 @@ CHANGELOG>>
 	}
 
 
-	//@title: randnum
-	//@args :
-	//@end
-	//@body :
-	//	Generate random numbers
-	//@end   
+
+	//Generate random numbers
 	public String function randnum ( /*Optional*/ Numeric n ) 
 	{
 		// make an array instead, and join it...
@@ -701,12 +622,7 @@ CHANGELOG>>
 
 
 
-	//@title: make_index 
-	//@args :
-	//@end
-	//@body :
-	//	Generate an index
-	//@end   
+	//Generate an index
 	public function make_index (ColdMVC ColdMVCInstance) 
 	{
 		//Use global scope for now.  This will be fixed later on.
@@ -715,21 +631,16 @@ CHANGELOG>>
 		variables.data    = ColdMVCInstance.app;
 		variables.db      = ColdMVCInstance.app.data;
 
-
 		//Find the right resource.
 		try 
 		{
 			//Add more to logging
 			logReport("Evaluating URL route");
 
-			//Negotiate search engine safety
-			//ses_path = (check_deep_key( appdata, "settings", "ses" )) ? cgi.path_info : cgi.script_name;
-
 			//Set some short names in case we need to access the page name for routing purposes
 			variables.data.loaded = 
 				variables.data.page = 
 											rname = resourceIndex(name=cgi.script_name, ResourceList=appdata);
-											//rname = resourceIndex(name=ses_path, ResourceList=appdata);
 
 			//Send a 404 page and be done if this resource was not found.
 			if (rname eq "0") 
@@ -781,7 +692,7 @@ CHANGELOG>>
 			//Find an alternate route model first.
 			if (check_deep_key(appdata, "routes", rname, "model")) 
 			{
-				logReport("Evaluate alternative mapped to route name.");
+				writeoutput("Evaluate alternative mapped to route name.");
 
 				//Get the type name
 				ev = checkArrayOrString( appdata.routes[rname], "model" );
@@ -872,22 +783,19 @@ CHANGELOG>>
 					else if ( ev.type == "struct" )
 					{
 						//This is an exception for now...
-						logReport( "<br />Views as structs are not yet supported.  Please fix your data.json file." );
-						render_page( 
-							status = 500,
-							errorMsg = "Views as structs are not yet supported.  Please fix your data.json file."
-						);
-						abort;
+						writeoutput( "<br />Views as structs are not yet supported.  Please fix your data.json file." );
 					}
 				}
 				else if (check_deep_key(appdata, "routes", rname) && StructIsEmpty(appdata.routes[rname]))
 				{
-					logReport( "Load view with same name as route." );
+					logReport( "same name as route");
+					writeoutput("Load view with same name as route.");
 					_include (where = "views" , name = rname); //& ".cfm"); 
 				}
 				//Then check if it's blank, and load itself
 				else {
-					logReport( "Load default route." );
+						logReport( "default");
+					writeoutput("Load default route.");
 					_include (where = "views", name = "default");
 				}
 			}
@@ -929,12 +837,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: dynquery 
-	//@args :
-	//@end
-	//@body :
-	//	Run a query using file path or text, returning the query via a variable
-	//@end   
+	//Run a query using file path or text, returning the query via a variable
 	public Struct function dynquery ( 
 		Optional queryPath,                     //Path to file containing SQL code
 		Optional queryText,                     //Send a query via text
@@ -971,7 +874,7 @@ CHANGELOG>>
 			//Save the contents of the error message and send that back
 			savecontent variable="errMessage" {
 				err = cfcatch.TagContext[ 1 ];
-				logReport( 
+				writeoutput( 
 					"SQL execution error at file " & 
 					err.template & ", line " & err.Line & "." &
 					cfcatch.message
@@ -994,15 +897,14 @@ CHANGELOG>>
 		};
 	}
 
+	/*Fill out the user information*/
+	public boolean function memberOf (String groupID, String userID) {
+		/*Loop through each.*/	
+		return objCommon.GetGroupMembership(group=groupID, type="DB", username=userID); 
+	}
 
-	//@title: check_deep_key 
-	//@args :
-	//	Struct Item
-	//	String list 
-	//@end
-	//@body :
-	//	Check in structs for elements
-	//@end   
+
+	/*Check in structs for elements*/
 	public Boolean function check_deep_key (Struct Item, String list) {
 		thisMember=Item;
 		nextMember=Item;
@@ -1019,13 +921,8 @@ CHANGELOG>>
 	}
 
 
-	//@title: wrapError 
-	//@args :
-	//@end
-	//@body :
-	//	Wrap error messages
-	//@end   
-	private query function wrapError(e) {
+	/*wrap Error*/
+	public query function wrapError(e) {
 		err = e.TagContext[1];
 		structInsert(myRes, 0, "status");
 		structInsert(myRes, "Error occurred in file " & e.template & ", line " & e.line & ".", "error");
@@ -1034,13 +931,8 @@ CHANGELOG>>
 	}
 
 
-	//@title: resourceIndex 
-	//@args :
-	//@end
-	//@body :
-	//	Find the index of a resource if it exists.  Return 0 if it does not.*/
-	//@end   
-	private String function resourceIndex (String name, Struct ResourceList) 
+	/*Find the index of a resource if it exists.  Return 0 if it does not.*/
+	public String function resourceIndex (String name, Struct ResourceList) 
 	{
 		//Define a base here
 		base = "";
@@ -1099,12 +991,10 @@ CHANGELOG>>
 		return ToString(0);
 	}
 
-	//@title: login 
-	//@args :
-	//@end
-	//@body :
-	//	Handle basic login
-	//@end   
+
+
+
+	//Do login stuff
 	public function login ( )
 	{
 		//Zero cookies...
@@ -1119,14 +1009,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: execQuery 
-	//@args :
-	//	String qf = 
-	//	Boolean qf = 
-	//@end
-	//@body :
-	//	Hash function for text strings.  Function returns a query.  NULL if nothing...
-	//@end   
+	/*Function returns a query.  NULL if nothing... */
 	public function execQuery (String qf, Boolean dump) 
 	{
 		/*Check for the existence of the file we're asking for*/
@@ -1164,13 +1047,11 @@ CHANGELOG>>
 	}
 
 
-	//@title: validate 
-	//@args :
-	//@end
-	//@body :
-	//	Validate a struct using a model struct
-	//@end   
-	public Struct function validate ( t /*Struct to check*/, 		v /*Struct to validate with*/ )
+	//Runs through a struct and does some stuff
+	public Struct function validate ( 
+		t /*Struct to check*/, 
+		v /*Struct to validate with*/ 
+	 )
 	{
 		//As long as everything was good, we assume the status is true.
 		s = StructNew();
@@ -1338,13 +1219,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: render_page
-	//@args :
-	//	v = ...
-	//@end
-	//@body :
-	//	Add to database without anything complex
-	//@end   
+	//Insert records into SQL tables with sense...
 	function _insert ( v )
 	{
 		//Define stuff
@@ -1440,13 +1315,7 @@ CHANGELOG>>
 	}
 
 
-	//@title: init
-	//@args :
-	//	Struct Appscope = ...
-	//@end
-	//@body :
-	//	Initialize ColdMVC
-	//@end   
+	/*Initialize some stuff*/
 	public ColdMVC function init (Struct appscope) 
 	{
 		//Add pre and post
@@ -1518,11 +1387,6 @@ CHANGELOG>>
 	}
 
 } /*end component declaration*/
-
-	/**
-	 * Copy me
-	 *
-	 */
 </cfscript>
 
 	<!---

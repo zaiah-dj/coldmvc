@@ -1,8 +1,22 @@
 {
-	"datasource": "<datasource>",
-	"base":       "<base>",
-	"Home":       "<web>",
-	"name":       "<name>",
-	"data":       {},
-	"routes":     {}
+	"source":     "{{ DATASOURCE }}",
+	"cookie":     "{{ COOKIE }}",
+	"base":       "{{ BASE }}",
+	"Home":       "tmp",
+	"name":       "{{ NAME }}",
+	"title":      "{{ TITLE }}",
+	"debug":      0,
+	"master-post":false,
+	"settings":   {
+		"verboseLog": 0,
+		"addLogLine": 0
+	}, 
+	"data":       {
+	},
+	"css":        [ 
+	],
+	"js":         [ 
+	],
+	"routes":     {
+	}
 }

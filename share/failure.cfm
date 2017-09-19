@@ -1,1 +1,2 @@
-<h2>fail</h2>
+<cfscript>
+</cfscript>

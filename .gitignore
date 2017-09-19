@@ -2,3 +2,4 @@ assets/
 examples/ex1
 src/
 vendor/
+*.class
