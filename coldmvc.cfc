@@ -1,13 +1,45 @@
-<!---
-coldmvc.cfc
-
-An MVC like structure for handling ColdFusion pages.
-
-TODO:
-- Add database struct add key 
---->
 <cfcomponent name="ColdMVC">
 <cfscript>
+/* --------------------------------------------- 
+  coldmvc.c
+
+
+	Summary
+	-------
+	An MVC framework for CFML engines.
+
+
+	Copyright Information
+	---------------------
+	Copyright (c) 2017 Antonio Ramar Collins II (ramar@deep909.com)
+
+
+	License
+	-------
+	ColdMVC is licensed under the LGPL
+	Please see either the LICENSE file included 
+	with this repository or the following URL for
+	more information:
+
+	[ https://www.gnu.org/licenses/lgpl.txt ]
+
+
+	Usage
+	-----
+	not done yet... sorry	
+
+
+
+	TODO
+	----
+	...
+
+	Changes
+	-------
+
+ * --------------------------------------------- */
+
+
 /*Other directories*/
 this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 

@@ -1,20 +1,50 @@
 /* --------------------------------------------- 
- *coldmvc.c* 
+  coldmvc.c
 
-create all dirs
 
-copy all files
+	Summary
+	-------
+	ColdMVC's CLI admin tool
 
-parse the current json manifest
-	use jsmn to parse and make sure it works correctly
 
-create any orm files if needed
-	create coldfusion's orm stupid files
+	Copyright Information
+	---------------------
+	Copyright (c) 2017 Antonio Ramar Collins II (ramar@deep909.com)
 
-open a server and start doing requests
 
-create forms? (that's pretty easy)
+	License
+	-------
+	ColdMVC is licensed under the LGPL
+	Please see either the LICENSE file included 
+	with this repository or the following URL for
+	more information:
+
+	[ https://www.gnu.org/licenses/lgpl.txt ]
+
+
+	Usage
+	-----
+	not done yet... sorry	
+
+
+
+	TODO
+	----
+	create all dirs
+
+	copy all files
+
+	parse the current json manifest
+
+	create any orm files if needed
+		create coldfusion's orm stupid files
+
+	open a server and start doing requests
+
+	create forms? (that's pretty easy)
+
 	create the html based on what's in the json file
+
  * --------------------------------------------- */
 #include <stdio.h>
 #include <string.h>
