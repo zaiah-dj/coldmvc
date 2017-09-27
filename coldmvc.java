@@ -18,27 +18,32 @@ class CLI
 		//mkdir whatever...
 		//copy whatever...
 		//Maybe add new thing to a list somewhere so you don't lose it
-
 	}
 
 //CREATE FROM JSON
 	//parse JSON and do whatever
 
 
-//CREATE
-	//mkdir whatever...
-	//copy whatever...
-	//Maybe add new thing to a list somewhere so you don't lose it
+	//REMOVE (only needed if you have a list)
+	public static void remove ( String a )
+	{
+
+	}
 
 
-//REMOVE (only needed if you have a list)
+	//DISPLAY ROUTES
+	public static void showRoutes ( String a )S
+	{
 
+	}
 
-//DISPLAY ROUTES
+	//CREATE NEW DATASOURCES
+	public static void createDatasource ( String a )
+	{
 
-
-
-//CREATE NEW DATASOURCES
+	}
+	
+	//...
 	private static String progname = "coldmvc";
 
 	//Print formatted error messages that stop

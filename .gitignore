@@ -1,5 +1,6 @@
+archive/
 assets/
-examples/ex1
+examples/
 src/
 vendor/
 *.class

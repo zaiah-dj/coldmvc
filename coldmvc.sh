@@ -1,227 +1,181 @@
-#!/bin/sh -
-# -----------------------------------------------------------
-# ColdMVC
-# -------
-# Tooling to set up folders and whatnot for a new instance.
+#!/bin/bash -
+# -------------------------------------------- #
+# coldmvc.sh
 #
+# @author
+#		Antonio R. Collins II (ramar.collins@gmail.com)
+# @end
+#
+# @copyright
+# 	Copyright 2016-Present, "Deep909, LLC"
+# 	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
+# @end
 # 
-# Commands
-# --------
-# - list instances
-# - create a new instance
-# - remove an instance
-# - (registration is not needed b/c of how cf executes code...)
+# @summary
+# 	An administration interface for ColdMVC sites.
+# @end
 #
+# @usage
+# 	
+# @end
 #
-# Directory Layout
-# ----------------
-# app    - The application logic (you could write this ahead of time)
-# assets - CSS, Javascript, static images, videos, etc.
-# db     - Database files (ORM property stuff...)
-# files  - Server writes files here
-# sql    - SQL queries (should be part of properties probably)
-# views  - View part of MVC.  HTML goes here
-#
-#
-# Aliases (to test building example instances)
-# --------------------------------------------
-#
-# #Some aliases to get this thing to run correctly
-# function mkv ( ) {
-# 	APP=$1
-# 	[ -z "$APP" ] && { printf "No instance name specified.\n" 2>/dev/null; return; }
-# 	./coldmvc.sh -c $HOME/www/$APP
-# 	ln -s $HOME/www/$APP $HOME/prj/coldmvc/examples/$APP 
-# 	echo "Instance created at $HOME/www/$APP."
-# }
+# @body
+#  
+# @end
 # 
-# 
-# function rmv ( ) {
-# 	APP=$1
-# 	[ -z "$APP" ] && { printf "No instance name specified.\n" 2>/dev/null; return; }
-# 	rm -rf $HOME/www/$APP $HOME/prj/coldmvc/examples/$APP 
-# 	echo "Instance $HOME/www/$APP removed."
-# }
-# -----------------------------------------------------------
+# @todo
+#		- Be able to build from JSON
+# 	- Handle setup tasks and tooling ( like database connections and maintenance ) 
+# 	- Convert to Java or C++
+# @end
+# -------------------------------------------- #
 
-PROGRAM=coldmvc
-BINDIR="$(dirname "$(readlink -f $0)")"
-SELF="$(readlink -f $0)"
+DIR=$HOME/prj/www-lucee/$DEV_DOMAIN
 
-die () {
-	printf "$PROGRAM error: $1"	>/dev/stderr
-	exit $STATUS
-}
-
-
-usage () {
-	STATUS=${1:-0}
-	cat <<EOF
-Usage: ./$PROGRAM
-	[ -  ]
-
--c, --create <arg>            Create a new instance.
--r, --remove <arg>            Remove an instance.
--l, --list-instances          List info about instances.
--t, --root-dir                Create a root directory.
--v, --verbose                 Be verbose in output.
--h, --help                    Show this help and quit.
-EOF
-	exit $STATUS
-}
-
-[ -z "$BASH_ARGV" ] && {
-	printf "$PROGRAM: Nothing to do\n" > /dev/stderr
-	usage 1
-}
-
+# Process any options
 while [ $# -gt 0 ]
 do
 	case "$1" in
-	-c|--create)
-		DO_CREATE=1
-		shift
-		DIR="$1"
-	;;
-	-d|--datasource)
-		shift
-		DATASOURCE="$1"
-	;;
-	-t|--rootdir)
-		shift
-		ROOTDIR="$1"
-	;;
-	-n|--name)
-		shift
-		NAME="$1"
-	;;
-	-u|--update)
-		DO_UPDATE=1
-		shift
-		DIR="$1"
-	;;
-	-r|--remove)
-		DO_REMOVE=1
-		shift
-		DIR="$1"
-	;;
-	-l|--list-instances)
-		DO_LIST=1
-	;;
-	-v|--verbose)	VERBOSE=true
-	;;
-	-h|--help)	usage 0
-	;;
-	--)	break
-	;;
-	-*)	printf "Unknown argument received: $1\n" > /dev/stderr; usage 1
-	;;
-	*)	break
-	;;
+		-f|--folder)
+			shift
+			DIR="$1"
+		;;
+
+		-n|--name)
+			shift
+			NAME="$1"	
+		;;
+
+		-m|--domain)
+			shift
+			DOMAIN="$1"	
+		;;
+
+		-l|--list)
+			ACTION="l"
+		;;
+
+		-d|--description)
+			shift
+			DESCRIPTION="$1"	
+		;;
+
+		-h|--hh)
+			ACTION="h"
+			shift
+			TYPE="$1"	
+		;;
+
+		-v|--verbose)	
+			VERBOSE=true
+		;;
+
+		--help)	
+			usage 0
+		;;
+
+		--)	break
+		;;
+
+		-*)	printf "Unknown argument received: $1\n" > /dev/stderr; usage 1
+		;;
 	esac
 	shift
 done
 
-SRC="/share"
-SRC="./share"
-
-# Let's see everything
-printf "%30s: %s\n" "DIR" $DIR
-printf "%30s: %s\n" "SRC" $SRC
-
-# Set all that silly crap 
-# OS options  - L = Linux, C = Cygwin, M = OSX, W = Windows
-OS=1;
-case $OS in
-	'C') 
-		;;
-	'L')
-		;;
-	'M')
-		;;
-	'W')
-		;;
-esac
+# Set up a new CMVC instance
+[ $VERBOSE -eq 1 ] && printf "Creating new ColdMVC instance...\n"
+mkdir -p $DIR/{app,assets,db,files,log,share,std,views}
 
 
-if [ ! -z $DO_LIST ]  
+
+# Can you ping?  If so, clone it from Github
+if [ 0 -eq 1 ]
 then 
-	#Configuration is in /etc.  More than likely a SQL db with your stuff...
-	printf "">2/dev/null
+	REPO=https://github.com/zaiah-dj/coldmvc.git
+	CURR=$DIR/coldmvc-tmp
+	git clone $REPO $CURR
+# If not, do something else
+else
+	CURR=$HOME/prj/coldmvc
 fi
 
+# Populate the new thing
+[ $VERBOSE -eq 1 ] && printf "Populating new ColdMVC instance...\n"
+cp $CURR/share/{Application.cfc,coldmvc.cfc,index.cfm,data.json} $DIR/
+cp $CURR/share/data.json.example $DIR/std/
+#cp $CURR/share/apache_htaccess $DIR/.htaccess
+cp $CURR/share/app-default.cfm $DIR/app/default.cfm
+cp $CURR/share/views-default.cfm $DIR/views/default.cfm
+cp $CURR/share/{4xx-view,5xx-view,failure,mime-view,html-view,admin-view}.cfm $DIR/std/
+cp $CURR/share/Application-Redirect.cfc $DIR/app/Application.cfc
+cp $CURR/share/Application-Redirect.cfc $DIR/db/Application.cfc
+cp $CURR/share/Application-Redirect.cfc $DIR/files/Application.cfc
+cp $CURR/share/Application-Redirect.cfc $DIR/std/Application.cfc
+cp $CURR/share/Application-Redirect.cfc $DIR/views/Application.cfc
+cp $CURR/share/*.css $DIR/assets/
+touch $DIR/{Makefile,README.md} 
+[ -d $DIR/coldmvc-tmp ] && rm -rf $DIR/coldmvc-tmp
 
-# ???
-if [ ! -z $DO_CREATE ]
-then
-	#Die if no $DIR was specified.
-	[ -z "$DIR" ] && die "No directory specified."
+# Modify the data.json in the new directory to actually work
+sed -i "{
+	s/DATASOURCE/(none)/
+	s;COOKIE;`xxd -ps -l 60 /dev/urandom | head -n 1`;
+	s;BASE;/;
+	s/NAME/$DEV_DOMAIN/
+	s/TITLE/${DEV_DOMAIN%%.local}/
+}" $DIR/data.json
 
-	#Also die if no ROOTDIR was specified.
-	[ -z "$ROOTDIR" ] && die "No root directory specified." 
+#Add a changelog
+[ $VERBOSE -eq 1 ] && printf "Generating a CHANGELOG file...\n"
+printf "`date +%F`\n\t- Created this project." > $DIR/CHANGELOG
 
-	#Try creating a directory anyway.
-	if [ ! -d "$DIR" ]
-	then
-		mkdir -p $DIR || die "Failed to create directory '$DIR'."
-	fi	
+#Add a README
+[ $VERBOSE -eq 1 ] && printf "Generating a README file...\n"
+printf "Give me a short description of this project.\n(Press [Ctrl-D] to save this file...)\n"
+touch $DIR/README.md
+cat > $DIR/README.md.USER
+date > $DIR/README.md.ACTIVE
+sed 's/^/\t -/' $DIR/README.md.USER >> $DIR/README.md.ACTIVE
+printf "\n" >> $DIR/README.md.ACTIVE
+cat $DIR/README.md.ACTIVE $DIR/README.md > $DIR/README.md.NEW
+rm $DIR/README.md.{ACTIVE,USER}
+mv $DIR/README.md.NEW $DIR/README.md
 
-	#Get the realpath, set a datasource
-	DIR=`realpath $DIR`
-	DATASOURCE=${DATASOURCE:-""}
+#Is a LICENSE needed?
+[ $VERBOSE -eq 1 ] && printf "Generating a LICENSE...\n"
+touch $DIR/LICENSE
 
-	#Set a name
-	if [ ! -z $NAME ] 
-	then
-		NAME=`basename $DIR`
-	fi
+#Create git repo 
+[ $VERBOSE -eq 1 ] && printf "Creating the Git repository for this project...\n"
+cd $DIR
+git init
+{
+echo <<GIT
+*.bmp
+*.gif
+*.jpg
+*.png
+*.mp4
+*.mov
+*.mkv
+files/*
+GIT
+} > $DIR/.gitignore
+git add .
+git commit -m "Standard first commit."
 
-	#Make all directories
-	mkdir -p $DIR/{app,assets,db,files,sql,std,views} || echo "Failed to make new directory"
-
-	#Copy the framework files into the root of the new folder. (should have been links)
-	ln $SRC/coldmvc.cfc $DIR/coldmvc.cfc
-
-	#Copy the rest of these because they may be heavily modified.
-	#cp $SRC/5xx-view.css $DIR/5xx-view.css
-	cp $SRC/Application.cfc $DIR/Application.cfc
-	cp $SRC/{failure,index}.cfm $DIR/
-	cp $SRC/{4xx,5xx}-view.css $DIR/
-	cp $SRC/{4xx,5xx,admin,html,mime}-view.cfm $DIR/std/
-	touch $DIR/{app,views}/default.cfm
-
-	#Create data.json or data.cfm (probably data.json)
-	touch $DIR/data.json
-	[ ! -z $LOAD_JSON ] && [ ! -f $JSON ] && die "JSON not specified." 
-	if [ ! -z $LOAD_JSON ]
-	then
-		printf "" > /dev/null
-		#Create resource files
-
-		#Create ORM files (these can be done at any time)	
-
-		#Create basic view files from some template somewhere
-	else
-		#Set up the data file after setup.
-		cp $SRC/data.json $DIR/data.json
-		sed -i "{ 
-			s#<name>#$NAME#; 
-			s#<web>#$ROOTDIR#; 
-			s#<datasource>#$DATASOURCE#; 
-			s#<base>#$ROOTDIR#; }" $DIR/data.json
-	fi
-fi
+#/etc/hosts should be modifiable via here
+[ $VERBOSE -eq 1 ] && printf "Updating local /etc/hosts file...\n" 
+printf "127.0.0.1\t$DEV_DOMAIN\t$DEV_ALIAS\n#End of file\n" >> $HOSTS_FILE
 
 
-if [ ! -z $DO_ORM ]
-then
-	# orm...
-printf "">2/dev/null
-fi
+#Generate the scaffolding for a new VirtualHost for Lucee
+HOST_CONTENT=$(cat <<LUCEE_HOST
+\t\t<!-- #BEGIN:$DEV_DOMAIN -->\n\t\t<Host name="${DEV_DOMAIN}" appBase="webapps">\n\t\t\t<Context path="" docBase="${DIR}" />\n\t\t\t<Alias>${DEV_ALIAS}</Alias>\n\t\t</Host>\n\t\t<!-- #END:$DEV_DOMAIN -->\n
+LUCEE_HOST
+) #This is the end of variable declaration
 
 
-if [ ! -z $DO_REMOVE ] 
-then 
-	rm -rf $DIR
-fi
-
+#Create a new VirtualHost for Lucee
+sed -i "{ s|\(<!-- ADD NEW HOSTS HERE -->\)|\1\n${HOST_CONTENT}| }" $LUCEE_CONF

@@ -1,5 +1,4 @@
 # Build variables
-CFLAGS = -g -Wall -Werror -Wno-unused -Wstrict-overflow -ansi -std=c99 -Wno-deprecated-declarations -O2 -pedantic-errors $(LDDIRS) $(LDFLAGS) $(DFLAGS)
 ARCHIVEDIR=..
 ARCHIVEFMT = gz
 MANPREFIX = ${PREFIX}/share/man
@@ -14,8 +13,6 @@ CONFIG = /etc
 
 # Program variables
 NAME = coldmvc
-SRC = lite.c parsely.c tab.c json.c main.c
-OBJ = ${SRC:.c=.o}
 IGNORE = archive
 ARCHIVEDIR = ..
 ARCHIVEFILE = $(NAME).`date +%F`.`date +%H.%M.%S`.tar.${ARCHIVEFMT}
@@ -31,18 +28,6 @@ run:
 	@java CLI 
 
 
-coldmvc: ${OBJ}
-	@echo CC -o $@ ${OBJ} ${CFLAGS}
-	@${CC} -o $@ ${OBJ} ${CFLAGS}
-
-#sqlite3.o: CFLAGS = -O2 -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_RTREE 
-#sqlite3.o:
-#	@echo CC -o sqlite3.o sqlite3.c ${CFLAGS}
-#	@${CC} -o sqlite3.o sqlite3.c ${CFLAGS}
-#	@echo CC -o sqlite3.o sqlite3.c -O2 -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_RTREE
-#	@${CC} -o sqlite3.o sqlite3.c -O2 -DSQLITE_ENABLE_FTS4 -DSQLITE_ENABLE_RTREE 
-
-	
 install:
 	-test -d $(PREFIX) || mkdir $(PREFIX)
 	-test -d $(SHARE) || mkdir $(SHARE)
