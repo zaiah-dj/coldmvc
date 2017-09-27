@@ -1,99 +1,164 @@
 <cfscript>
-component name = "ColdMVC" {
 /* --------------------------------------------------
 coldmvc.cfc
 -----------
-Author:
-Antonio R. Collins II (ramar.collins@gmail.com)
-Copyright 2016-Present, "Deep909, LLC"
+@author
+	Antonio R. Collins II (ramar.collins@gmail.com)
+@end
 
-Original Author Date:
-Tue Jul 26 07:26:29 2016 -0400
+@copyright
+	Copyright 2016-Present, "Deep909, LLC"
+	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
+@end
 
-Summary:
-An MVC like structure for handling ColdFusion pages.
+@summary
+	An MVC like structure for handling ColdFusion pages.
+@end
 
-Usage:
-Drop this file into your application's web root and
-call it using index.cfm or Application.cfc.
+@usage
+	Drop this file into your application's web root and
+	call it using index.cfm or Application.cfc.
+@end
 
-TODO:
-- Add a mock function: 
-	mock(..., { abc="string", def="numeric", ... })
-- Look into adding a task to the Makefile to automate adding notes to the CHANGELOG below
-- Add the ability to select different views depending on some condition in the model
-- Add the ability to redirect on failure depending on some condition in the model
-- Complete the ability to log to other outputs (database, web storage, etc)
-- What kind of task system would work best?
-- Create app scopes as the same name of the file that vars are declared in.  I'm thinking that this would make it easy to follow variables throughout more complex modules.
-- Add an option for mock/static data (it goes in db and can be queried)
+@todo
+	- Add a 'test' directory for tests
+		In this folder have tests for functions
+		Have another folder for mock views and apps
+		When you deploy, these can be deleted or moved (or simply ignored)
 
-CHANGELOG>>
+	- Add a mock function: 
+		mock(..., { abc="string", def="numeric", ... })
 
+	- Look into adding a task to the Makefile to automate adding notes to the CHANGELOG below
 
-2017/09/07
+	- Add the ability to select different views depending on some condition in the model
 
-2017/09/06
-- Added this comprehensive changelog ;)
-- Shortened conditional code within 'validate()'
-- Moved all private functions to the top
-- Shortened link_text evaluation within 'link()' 
-- Added additional keys in 'data.settings' to control logging:
-	logLocation = location of log file, not written yet, but coming soon
-	verboseLog  = verbosity of log report?
-	addLogLine  = add the currently executing line to the log
-- Fixed a bug within checkArrayOrString that was causing the function
-	to return the wrong type when dealing with strings
-- Tested an .htaccess file that redirects all URLS to index.cfm
-- Removed 'jsonToQuery' function.  Seemed kind of useless since it was 
-	kind of difficult to make a mock in JSON format out of random data
-- Made a more sensible logging function to allow me to see where things 
-	go wrong within coldmvc.cfc
+	- Add the ability to redirect on failure depending on some condition in the model
 
+	- Complete the ability to log to other outputs (database, web storage, etc)
 
-2017/08/31
-- Added _insert to make it a bit easier to validate
-	and bind values when not using an ORM.
-- Merged in Mimetype hash table (search for this.mimes on this page to see it)
-- Added an updated 500 error page:
-	it includes all the possible HTTP statuses, but those will be moved to this file later on
-- Converted all other remaining functions written in CFML to cfscript for consistency
-- All other remaining functions, except 'dynquery' - This isn't finished yet
-- Began implementation of a logging feature that can write to other error streams
+	- What kind of task system would work best?
 
+	- Create app scopes as the same name of the file that vars are declared in.  
+		I'm thinking that this would make it easy to follow variables throughout 
+		more complex modules.
 
-2016/09/13
--	Added a merge function for structs.
-	
--	Also added a way to support dependency injection for page models:
-	The skinny is that the init() function will allow you to insert a data
-	model (from some outside app most likely, that also speaks CFML)
-	and optionally append to or overwrite data within the app that has
-	exposed the init() function.
+	- Add an option for mock/static data (it goes in db and can be queried)
 
-- Got rid of C source. It'd be a better idea to stick to Java since ColdFusion & Lucee users probably already have it.
-    
-- Also made changes to README to be a little more informative and clear on how to get it rolling.
+	- how to add a jar to a project?
 
+	- step 1 - must figure out how to use embedded databases...
 
-2016/09/06
-- Updated coldmvc by adding some new functions.
-    
-- Updated default application.cfc by turning it into a property.  The cfscript tags that were present in the document previously were causing Lucee to throw an exception.
-    
--	Also added the "base" key to data.json.   A few other keys should be added as well, but this one took priority. Without this key, index.cfm automatically throws a 404 not found error when looking for app and view files besides default.cfm.
+	- add one of the embedded database to cmvc tooling
 
-- Checkpoint commit.  coldmvc has a new function called 'jsonToQuery' which converts JSON to a query :)
+	- add logExcept (certain statements, you might want to stop at)
+
+	- log (always built in, should always work regardless of backend)	
+
+	- db (space for static data models)
+
+	- middleware (stubs of functionality that really don't belong in app)
+
+	- routes (stubs that define routes placed by middleware or something else)
+
+	- settings (static data that does not change, also placed by middleware)
+
+	- sql (technically, middleware can drop here too)
+
+	- orm, the built-in works fine, but so does other stuff...
+
+	- parse JSON at application
+
+	- make sure application refresh works...
+
+	- parsing of JSON and creation
+
+	- 404 pages need to be pretty and customizable
+
+	- 500 pages need to be pretty and customizable
+
+	- need a way to take things down for maintenance
+
+	- maybe add a way to enable tags? ( a tags folder )
+@end
 
 
-2016/09/01
-- Changes on coldmvc will be marked in CHANGELOG.  Added new views and std/ directory for default templates.   Next step is deserializing JSON and creating the site in less steps.
+@changelog
+	2017/09/07 v0.2 milestone
+
+	2017/09/06
+	- Added this comprehensive changelog ;)
+
+	- Shortened conditional code within 'validate()'
+
+	- Moved all private functions to the top
+
+	- Shortened link_text evaluation within 'link()' 
+
+	- Added additional keys in 'data.settings' to control logging:
+		logLocation = location of log file, not written yet, but coming soon
+		verboseLog  = verbosity of log report?
+		addLogLine  = add the currently executing line to the log
+
+	- Fixed a bug within checkArrayOrString that was causing the function
+		to return the wrong type when dealing with strings
+
+	- Tested an .htaccess file that redirects all URLS to index.cfm
+
+	- Removed 'jsonToQuery' function.  Seemed kind of useless since it was 
+		kind of difficult to make a mock in JSON format out of random data
+
+	- Made a more sensible logging function to allow me to see where things 
+		go wrong within coldmvc.cfc
 
 
-<<CHANGELOG
+	2017/08/31
+	- Added _insert to make it a bit easier to validate
+		and bind values when not using an ORM.
+
+	- Merged in Mimetype hash table (search for this.mimes on this page to see it)
+
+	- Added an updated 500 error page:
+		it includes all the possible HTTP statuses, but those will be moved to this file later on
+
+	- Converted all other remaining functions written in CFML to cfscript for consistency
+
+	- All other remaining functions, except 'dynquery' - This isn't finished yet
+
+	- Began implementation of a logging feature that can write to other error streams
+
+
+	2016/09/13
+	-	Added a merge function for structs.
+		
+	-	Also added a way to support dependency injection for page models:
+		The skinny is that the init() function will allow you to insert a data
+		model (from some outside app most likely, that also speaks CFML)
+		and optionally append to or overwrite data within the app that has
+		exposed the init() function.
+
+	- Got rid of C source. It'd be a better idea to stick to Java since ColdFusion & Lucee users probably already have it.
+			
+	- Also made changes to README to be a little more informative and clear on how to get it rolling.
+
+
+	2016/09/06
+	- Updated coldmvc by adding some new functions.
+			
+	- Updated default application.cfc by turning it into a property.  The cfscript tags that were present in the document previously were causing Lucee to throw an exception.
+			
+	-	Also added the "base" key to data.json.   A few other keys should be added as well, but this one took priority. Without this key, index.cfm automatically throws a 404 not found error when looking for app and view files besides default.cfm.
+
+	- Checkpoint commit.  coldmvc has a new function called 'jsonToQuery' which converts JSON to a query :)
+
+
+	2016/09/01
+	- Changes on coldmvc will be marked in CHANGELOG.  Added new views and std/ directory for default templates.   Next step is deserializing JSON and creating the site in less steps.
+@end
 
  * -------------------------------------------------- */
 
+component name = "ColdMVC" {
 	/*VARIABLES - None of these get a docblock. You really don't need to worry with these*/
 	//Log message
 	this.logString = "";
