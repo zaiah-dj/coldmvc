@@ -172,9 +172,10 @@ then
 
 
 	# Then default all other variables if they were not specified.
+	BASE=${BASE:-""}
 	DATASOURCE=${DATASOURCE:-"(none)"}
-	BASE=${BASE:-"/"}
 	TITLE=${TITLE:-"$NAME"}
+	DOMAIN=${DOMAIN:-"$NAME"}
 	DESCRIPTION=${DESCRIPTION:-""}
 
 
@@ -196,45 +197,81 @@ EOF
 
 
 	# Set up a new CMVC instance
+	[ $VERBOSE -eq 1 ] && printf "\n* Create ColdMVC application folders...\n"
+	[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/{app,assets,components,db,files,middleware,routes,log,setup,sql,std,views}
 	mkdir -p $DIR/{app,assets,components,db,files,middleware,routes,log,setup,sql,std,views}
+
+	[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/assets/{css,js,sass,less}
 	mkdir -p $DIR/assets/{css,js,sass,less}
+
+	[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/db/static
 	mkdir -p $DIR/db/static
+
+	[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/std/custom
 	mkdir -p $DIR/std/custom
 
 
 	# Populate the new instance
-	[ $VERBOSE -eq 1 ] && printf "Populating new ColdMVC instance...\n"
+	[ $VERBOSE -eq 1 ] && printf "\n* Populating new ColdMVC instance...\n"
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.json} $DIR/
 	cp $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.json} $DIR/
+
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/data.json.example $DIR/std/
 	cp $SRC/share/data.json.example $DIR/std/
+
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/app-default.cfm $DIR/app/default.cfm
 	cp $SRC/share/app-default.cfm $DIR/app/default.cfm
+
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/views-default.cfm $DIR/views/default.cfm
 	cp $SRC/share/views-default.cfm $DIR/views/default.cfm
+
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/failure.cfm $DIR/std/
 	cp $SRC/share/failure.cfm $DIR/std/
+
+	[ $VERBOSE -eq 1 ] && echo cp $SRC/share/{4xx,5xx,mime,html}-view.cfm $DIR/std/
 	cp $SRC/share/{4xx,5xx,mime,html}-view.cfm $DIR/std/
-	cp $SRC/share/Application-Redirect.cfc $DIR/app/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/components/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/db/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/middleware/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/routes/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/setup/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/sql/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/std/Application.cfc
-	cp $SRC/share/Application-Redirect.cfc $DIR/views/Application.cfc
+
+	[ $VERBOSE -eq 1 ] && echo DONE!
+
+	[ $VERBOSE -eq 1 ] && printf "\n* Setting up redirects...\n"
+	for _d in app components db log middleware routes setup sql std views
+	do 
+		echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
+		cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
+	done
+
+	[ $VERBOSE -eq 1 ] && echo DONE!
+#	cp $SRC/share/Application-Redirect.cfc $DIR/components/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/db/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/middleware/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/routes/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/setup/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/sql/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/std/Application.cfc
+#	cp $SRC/share/Application-Redirect.cfc $DIR/views/Application.cfc
+
+	[ $VERBOSE -eq 1 ] && printf "\n* Setting up assets...\n"
 	cp $SRC/share/*.css $DIR/assets/
+
+	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	# Modify the data.json in the new directory to actually work
+	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
 	sed -i "{
-		s/{{ DATASOURCE }}/(none)/
+		s/{{ DATASOURCE }}/${DATASOURCE}/
 		s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
-		s;{{ BASE }};/;
+		s;{{ BASE }};/${BASE};
 		s/{{ NAME }}/${NAME}/
 		s/{{ TITLE }}/${TITLE}/
 	}" $DIR/data.json
+	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	#Add a changelog
-	[ $VERBOSE -eq 1 ] && printf "Generating a CHANGELOG file...\n"
+	[ $VERBOSE -eq 1 ] && printf "\n* Generating a CHANGELOG file...\n"
 	printf "`date +%F`\n\t- Created this project." > $DIR/CHANGELOG
+	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	#Add a README
@@ -248,6 +285,7 @@ EOF
 #	cat $DIR/README.md.ACTIVE $DIR/README.md > $DIR/README.md.NEW
 #	rm $DIR/README.md.{ACTIVE,USER}
 #	mv $DIR/README.md.NEW $DIR/README.md
+# [ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	#Is a LICENSE needed?
@@ -257,7 +295,7 @@ EOF
 
 	#Create git repo 
 	[ $NO_GIT -eq 0 ] && {
-		[ $VERBOSE -eq 1 ] && printf "Creating the Git repository for this project...\n"
+		[ $VERBOSE -eq 1 ] && printf "\nCreating the Git repository for this project...\n"
 		touch $DIR/.gitignore
 		cd $DIR
 		git init
@@ -278,6 +316,7 @@ GIT
 		git add .
 		git commit -m "Standard first commit."
 		cd -
+		[ $VERBOSE -eq 1 ] && echo DONE!
 	}
 
 
