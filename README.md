@@ -1,97 +1,88 @@
-<h2>ColdMVC</h2>
+<h1>ColdMVC</h1>
 
 Summary
 -------
 <p>
-ColdMVC is a simple framework for ColdFusion and Lucee application servers.   It is supposed to facilitate an MVC model within ColdFusion applications and make it a bit easier to enforce "seperation of concerns".
+ColdMVC is a web framework for ColdFusion and Lucee application servers.   It is supposed to facilitate development via MVC within ColdFusion applications and make it trivial to enforce "seperation of concerns".  
 </p>
 
 
-Caveats
--------
+
+Installation
+------------
 <p>
-Running on Windows is not fun or easy right now and will involve a lot of manual work. OSX has not been tested yet.  Linux users can clone this repository and run the script titled coldmvc.sh to get started.   
+ColdMVC can be downloaded via its <a href="http://ramarcollins.com/coldmvc">homesite</a> or via Github.  You can clone the latest version by using the following on your system:
+
+<pre>
+you $  git clone https://github.com/zaiah-dj/coldmvc.git
+</pre>
 </p>
+
+<p>
+ColdMVC requires either ColdFusion or Lucee to work.  If you are totally new to ColdFusion and/or Lucee, you will want to get a copy and install it on your system.  I would surmise the easiest way to get going is to start with Lucee's express build.
+It needs no special rights to run on your system and can be downloaded <a href="http://cdn.lucee.org/rest/update/provider/express/5.2.3.35">here</a>.
+</p>
+
+
+
+Builds On
+---------
+<p>
+ColdMVC is administered via shell script right now, and has been tested on Linux, OSX and Cygwin.   A detailed list of the versions tested follow.   Windows users will need either <a href="/">Git Bash</a> or <a href="/">Cygwin</a> to run the tooling at the moment. 
+</p>
+
+<ul>
+<li>
+	Linux
+	<ul>
+		<li>Debian 8</li>
+		<li>Ubuntu 16</li>
+		<li>Fedora</li>
+	</ul>
+</li>
+<li>
+	OSX	
+	<ul>
+		<li>Sierra</li>
+		<li>High Sierra</li>
+	</ul>
+</li>
+</ul>
  
+
 
 Setting up New Projects
 -----------------------
 <p>
-New projects can be setup using a command similar to the following.
+New projects can be setup using a command line similar to the the following.
 <pre>
-./coldmvc.sh -c /path/to/coldfusion/webroot -t '/approot'
+./coldmvc.sh -c -f /path/to/coldfusion/webroot/path-of-site -n 'site-name'
 </pre>
 </p>
 
 <p>
-'/approot' refers to a directory underneath your ColdFusion or Lucee webroot.   The directory does not need to exist as ColdMVC will create it for you.  After the command runs successfully, you can access the new application at:
-<a>http://localhost:<your ColdFusion / Lucee port number>/approot</a>
-</p>
-
-How Does This Work?
--------------------
-<p>
-More complete documentation on how to get ColdMVC up and running will be coming soon.  I am working hard to get a more stable distribution method underway, so please be patient!
-</p>
-
-<!--
-How Does This Work?
--------------------
-<p>
-ColdMVC uses one file for it's configuration.  So learning the in's and out's of the file titled 'data.json' will help you get much faster at building apps to do what you want.
+This is the absolute smallest set of options needed to create an instance of a
+ColdMVC site on your system. 
 </p>
 
 <p>
-After a project is successfully created, a data.json file will be at the root of your application.  Within this file is your app's routing table, a default datasource, and the name of the app (which is used as the default HTML title).  An example is shown below: 
-</p>
-
-<pre>
-{
-	"datasource": "CMSCopy",
-	"home":       "http://localhost:8300",
-	"base":       "/cms7",
-	"name":       "TestApp",
-	"routes":     {
-		"approve":  { "page": "index", "data": "jordans" },
-		"edit":     { "page": "index", "data": "jordans" },
-		"flag":     { "page": "index", "data": "jordans" },
-		"history":  { "page": "index", "data": "jordans", "content-type": "application/xml" },
-		"version":  { "page": "index", "data": "jordans", "content-type": "text/html" }
-	}
-}
-</pre>
-
-<p>
-Routes can be interpreted one of four ways:
-
-If routes is an array, then names in quotations with no colons are resources that rely on the defaults.
-
-routes have:
-<table>
-	<tr>
-		<td>data</td>
-		<td>Name of a .cfm file in app that will be used to generate the page's data.</td>
-	</tr>
-	<tr>
-		<td>page</td>
-		<td>Name of view that will be used when interpreting the page.</td>
-	</tr>
-	<tr>
-		<td>content-type</td>
-		<td>The Mime Type that should be used when this page finishes creating the content of the request.
-	</tr>
-</table>
+Notice that you will need to specify the <i>absolute</i> path to where your Lucee or ColdFusion webroot, then append the name of the directory that will hold your web files.  (This will change in the future, do not worry.)  'site-name' is the symbolic name of your site, but will also be used as the title and domain name of the site if those flags are not specified.   After the command runs successfully, you should be able to visit a link that looks like the following (provided you have not changed the Lucee or ColdFusion default port number): 
+<a href="http://localhost:8888/site-name">http://localhost:8888/site-name</a>
 </p>
 
 <p>
-If a route has a blank object, then the default view and data file will be used to create content for that route.
+You should see something similar to the following screenshots. 
+<center>
+<img src="shots/first-page-400x400.png" />
+<img src="shots/second-page-400x400.png" />
+</center>
 
-So, for example, the routing table with the name 'zaza':
-"routes": {
-	"zaza": {}
-	...
-}
-
-will use default.cfm in app/ to create logic.  And use default.cfm in views/ to create views of the data.
+Or if you were unfortunate, you will see an exception with a big, fat 500 error message.  If something like this occurs, please contact me via ramar dot collins at gmail dot com, and I'll try to help you through the error.
 </p>
--->
+
+
+
+
+Additional Documentation
+------------------------
+Additional documentation can be found via <a href="http://ramarcollins.com/coldmvc">this link</a>

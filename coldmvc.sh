@@ -1,4 +1,4 @@
-#!/bin/bash -
+#!/bin/sh -
 # -------------------------------------------- #
 # coldmvc.sh
 #
@@ -29,7 +29,6 @@
 # 	- Convert to Java or C++
 # @end
 # -------------------------------------------- #
-
 # Variable list
 PROGRAM_NAME=coldmvc
 DIR=
@@ -38,14 +37,11 @@ SRC=.
 CREATE=0
 NO_GIT=0
 VERBOSE=0
-
 ERR_NODIR=1
 ERR_NONAME=2
 
-
 # An error function
-err() 
-{
+err() {
 	STATUS=${2:-0}
 	printf "$PROGRAM_NAME: $1\n" > /dev/stderr
 	exit $STATUS
@@ -339,4 +335,5 @@ fi
 
 
 
-	#cp $SRC/share/apache_htaccess $DIR/.htaccess
+#cp $SRC/share/apache_htaccess $DIR/.htaccess
+# vim: ff=unix
