@@ -258,7 +258,7 @@ EOF
 
 	# Modify the data.json in the new directory to actually work
 	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
-	sed -i "{
+	sed -i "" "{
 		s/{{ DATASOURCE }}/${DATASOURCE}/
 		s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
 		s;{{ BASE }};/${BASE};
