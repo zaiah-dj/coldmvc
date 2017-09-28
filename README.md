@@ -14,21 +14,22 @@ Installation
 ColdMVC can be downloaded via its <a href="http://ramarcollins.com/coldmvc">homesite</a> or via Github.  You can clone the latest version by using the following on your system:
 
 <pre>
-you $  git clone https://github.com/zaiah-dj/coldmvc.git
+git clone https://github.com/zaiah-dj/coldmvc.git
 </pre>
 </p>
 
 <p>
 ColdMVC requires either ColdFusion or Lucee to work.  If you are totally new to ColdFusion and/or Lucee, you will want to get a copy and install it on your system.  I would surmise the easiest way to get going is to start with Lucee's express build.
-It needs no special rights to run on your system and can be downloaded <a href="http://cdn.lucee.org/rest/update/provider/express/5.2.3.35">here</a>.
+It needs no special rights to run on your system and can be downloaded <a href="http://download.lucee.org/?type=releases">here</a>. 
 </p>
+
 
 
 
 Builds On
 ---------
 <p>
-ColdMVC is administered via shell script right now, and has been tested on Linux, OSX and Cygwin.   A detailed list of the versions tested follow.   Windows users will need either <a href="/">Git Bash</a> or <a href="/">Cygwin</a> to run the tooling at the moment. 
+ColdMVC is administered via shell script right now, and has been tested on Linux, OSX and Cygwin.   A detailed list of the versions tested follow.   Windows users will need either <a href="https://git-for-windows.github.io">Git Bash</a> or <a href="https://www.cygwin.com">Cygwin</a> to run the tooling at the moment. 
 </p>
 
 <ul>
@@ -72,10 +73,8 @@ Notice that you will need to specify the <i>absolute</i> path to where your Luce
 
 <p>
 You should see something similar to the following screenshots. 
-<center>
-<img src="shots/first-page-400x400.png" />
-<img src="shots/second-page-400x400.png" />
-</center>
+<img style="margin: 0 auto" src="shots/first-page-400x400.png" />
+<img style="margin: 0 auto" src="shots/second-page-400x400.png" />
 
 Or if you were unfortunate, you will see an exception with a big, fat 500 error message.  If something like this occurs, please contact me via ramar dot collins at gmail dot com, and I'll try to help you through the error.
 </p>
