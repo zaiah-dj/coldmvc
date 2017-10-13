@@ -1,6 +1,6 @@
 #!/bin/sh -
 # -------------------------------------------- #
-# coldmvc.sh
+# coldmod.sh
 #
 # @author
 #		Antonio R. Collins II (ramar.collins@gmail.com)
@@ -12,7 +12,7 @@
 # @end
 # 
 # @summary
-# 	An administration interface for ColdMVC sites.
+# 	A way to create new "plugins"
 # @end
 #
 # @usage
@@ -20,13 +20,14 @@
 # @end
 #
 # @body
-#  
+# 	 
 # @end
 # 
 # @todo
 #		- Be able to build from JSON
 # 	- Handle setup tasks and tooling ( like database connections and maintenance ) 
 # 	- Convert to Java or C++
+#		- Download "modules" via some web site somewhere and place them into this chain
 # @end
 # -------------------------------------------- #
 # Variable list
