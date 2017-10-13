@@ -29,6 +29,7 @@
 #		- Download "modules" via some web site somewhere and place them into this chain
 # @end
 # -------------------------------------------- #
+
 # Variable list
 PROGRAM_NAME=coldmvc
 DIR=
@@ -150,6 +151,8 @@ do
 	shift
 done
 
+echo "Fix ME before running! There are issues..."
+exit
 
 # CREATE NEW CMVC INSTANCES
 if [ $CREATE -eq 1 ]
@@ -235,16 +238,8 @@ EOF
 		echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 		cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 	done
-
 	[ $VERBOSE -eq 1 ] && echo DONE!
-#	cp $SRC/share/Application-Redirect.cfc $DIR/components/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/db/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/middleware/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/routes/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/setup/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/sql/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/std/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/views/Application.cfc
+
 
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up assets...\n"
 	cp $SRC/share/*.css $DIR/assets/
@@ -254,13 +249,29 @@ EOF
 
 	# Modify the data.json in the new directory to actually work
 	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
-	sed -i "" "{
-		s/{{ DATASOURCE }}/${DATASOURCE}/
-		s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
-		s;{{ BASE }};/${BASE};
-		s/{{ NAME }}/${NAME}/
-		s/{{ TITLE }}/${TITLE}/
-	}" $DIR/data.json
+
+	# Is this OSX or Linux?
+	test -z `uname | grep 'Darwin'` && IS_MAC=0 || IS_MAC=1
+
+	if [ $IS_MAC == 1 ]
+	then	
+		sed -i "" "{
+			s/{{ DATASOURCE }}/${DATASOURCE}/
+			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
+			s;{{ BASE }};/${BASE};
+			s/{{ NAME }}/${NAME}/
+			s/{{ TITLE }}/${TITLE}/
+		}" $DIR/data.json
+	else
+		sed -i "{
+			s/{{ DATASOURCE }}/${DATASOURCE}/
+			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
+			s;{{ BASE }};/${BASE};
+			s/{{ NAME }}/${NAME}/
+			s/{{ TITLE }}/${TITLE}/
+		}" $DIR/data.json
+	fi
+
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 

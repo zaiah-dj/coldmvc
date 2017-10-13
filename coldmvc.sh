@@ -29,6 +29,7 @@
 # 	- Convert to Java or C++
 # @end
 # -------------------------------------------- #
+
 # Variable list
 PROGRAM_NAME=coldmvc
 DIR=
@@ -254,13 +255,27 @@ EOF
 
 	# Modify the data.json in the new directory to actually work
 	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
-	sed -i "" "{
-		s/{{ DATASOURCE }}/${DATASOURCE}/
-		s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
-		s;{{ BASE }};/${BASE};
-		s/{{ NAME }}/${NAME}/
-		s/{{ TITLE }}/${TITLE}/
-	}" $DIR/data.json
+	test -z `uname | grep 'Darwin'` && IS_MAC=0 || IS_MAC=1
+
+	if [ $IS_MAC == 1 ]
+	then	
+		sed -i "" "{
+			s/{{ DATASOURCE }}/${DATASOURCE}/
+			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
+			s;{{ BASE }};/${BASE};
+			s/{{ NAME }}/${NAME}/
+			s/{{ TITLE }}/${TITLE}/
+		}" $DIR/data.json
+	else
+		sed -i "{
+			s/{{ DATASOURCE }}/${DATASOURCE}/
+			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
+			s;{{ BASE }};/${BASE};
+			s/{{ NAME }}/${NAME}/
+			s/{{ TITLE }}/${TITLE}/
+		}" $DIR/data.json
+	fi
+
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
