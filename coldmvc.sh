@@ -244,7 +244,7 @@ EOF
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up redirects...\n"
 	for _d in app components db log middleware routes setup sql std views
 	do 
-		echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
+		[ $VERBOSE -eq 1 ] && echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 		cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 	done
 
