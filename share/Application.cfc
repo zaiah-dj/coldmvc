@@ -1,4 +1,4 @@
-<!---
+/*
 Application.cfc
 
 @author
@@ -13,7 +13,7 @@ Application.cfc
 @summary
   All Application.cfc rules are specified here.
 @end
-  --->
+*/ 
 component {
 	this.sessionManagement = true;
 	function onRequestStart (string Page) {

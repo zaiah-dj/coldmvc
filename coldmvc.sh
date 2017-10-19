@@ -54,11 +54,13 @@ usage()
 {
 	STATUS=${2:-0}
 
+#-t, --test              Test out data.json with parameters.
 	cat <<USAGES
 $0:
 -c, --create            Create a new instance. 
     --apachify          Create an Apache-style virtual host and an .htaccess file.
     --no-git            Don't create a Git repo.
+-b, --basedir <arg>     Specify a base directory.
 -e, --engine <arg>      Specify which CFML engine you're running [ Lucee, Coldfusion ]
 -f, --folder <arg>      Specify which folder to use when creating a new instance.
 -n, --name <arg>        Specify a name to use for a new instance. 
@@ -96,11 +98,22 @@ do
 			NO_GIT=1
 		;;
 
+		-t|--testjson)
+			# Test out data.json
+			DO_TESTJSON=1
+		;;
+
 		# Parameters 
 		-f|--folder)
 			# Create this directory
 			shift
 			DIR="$1"
+		;;
+
+		-b|--basedir)
+			# Use a different base directory
+			shift
+			BASEDIR="$1"
 		;;
 
 		-e|--engine)
@@ -152,6 +165,7 @@ do
 done
 
 
+
 # CREATE NEW CMVC INSTANCES
 if [ $CREATE -eq 1 ]
 then
@@ -161,20 +175,18 @@ then
 	# Check that a directory has been specified
 	[ -z $DIR ] && err "No directory specified for new instance." $ERR_NODIR	
 
-
 	# Create a name if not specified
-	[ -z $NAME ] && {
-		NAME=`basename $DIR`
-	}
-
+	[ -z $NAME ] && NAME=`basename $DIR`
 
 	# Then default all other variables if they were not specified.
-	BASE=${BASE:-""}
 	DATASOURCE=${DATASOURCE:-"(none)"}
 	TITLE=${TITLE:-"$NAME"}
 	DOMAIN=${DOMAIN:-"$NAME"}
 	DESCRIPTION=${DESCRIPTION:-""}
 
+	# Negotiate the better base directory
+	BASEDIR=${BASEDIR:-"/"}
+	[ ${#BASEDIR} -gt 1 ] && [ ${BASEDIR:0:1} != '/' ] && BASEDIR="/${BASEDIR}"
 
 	# It's a good time for a message
 	[ $VERBOSE -eq 1 ] && {
@@ -182,7 +194,7 @@ then
 		#Uses Apache?  `test $NO_GIT -eq 1 && echo "No" || echo "Yes"`
 		cat <<EOF
 DIR         = $DIR
-BASE        = $BASE
+BASEDIR     = $BASEDIR
 DATASOURCE  = $DATASOURCE
 DOMAIN      = $DOMAIN
 TITLE       = $TITLE
@@ -191,7 +203,6 @@ DESCRIPTION = $DESCRIPTION
 Uses Git?     `test $NO_GIT -eq 1 && echo "No" || echo "Yes"`
 EOF
 	}
-
 
 	# Set up a new CMVC instance
 	[ $VERBOSE -eq 1 ] && printf "\n* Create ColdMVC application folders...\n"
@@ -238,14 +249,6 @@ EOF
 	done
 
 	[ $VERBOSE -eq 1 ] && echo DONE!
-#	cp $SRC/share/Application-Redirect.cfc $DIR/components/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/db/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/middleware/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/routes/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/setup/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/sql/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/std/Application.cfc
-#	cp $SRC/share/Application-Redirect.cfc $DIR/views/Application.cfc
 
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up assets...\n"
 	cp $SRC/share/*.css $DIR/assets/
@@ -257,12 +260,13 @@ EOF
 	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
 	test -z `uname | grep 'Darwin'` && IS_MAC=0 || IS_MAC=1
 
+	# If it's mac, the sed commands will have to be different.
 	if [ $IS_MAC == 1 ]
 	then	
 		sed -i "" "{
 			s/{{ DATASOURCE }}/${DATASOURCE}/
 			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
-			s;{{ BASE }};/${BASE};
+			s;{{ BASE }};${BASEDIR};
 			s/{{ NAME }}/${NAME}/
 			s/{{ TITLE }}/${TITLE}/
 		}" $DIR/data.json
@@ -270,7 +274,7 @@ EOF
 		sed -i "{
 			s/{{ DATASOURCE }}/${DATASOURCE}/
 			s;{{ COOKIE }};`xxd -ps -l 60 /dev/urandom | head -n 1`;
-			s;{{ BASE }};/${BASE};
+			s;{{ BASE }};${BASEDIR};
 			s/{{ NAME }}/${NAME}/
 			s/{{ TITLE }}/${TITLE}/
 		}" $DIR/data.json
