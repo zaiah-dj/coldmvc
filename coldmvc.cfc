@@ -413,7 +413,13 @@ component name = "ColdMVC" {
 		else {
 			b = check_deep_key( appdata, "routes", rname, "content-type" );
 		}
+
 		v = "std/" & ((b) ? "mime" : "html") & "-view.cfm";
+
+		//FIXME: Mime-view needs this
+		if ( b ) {
+			content_type = appdata.routes[ rname ][ "content-type" ];
+		}
 
 		//Include pages like normal if status is there...
 		if ( !StructKeyExists( a, "status" ) )

@@ -13,6 +13,5 @@ Application.cfc
 @summary
  	Stub for views rendered with any mimetype besides HTML. 
 @end
-  --->
-<cfcontent type="#content_type#">
-<cfoutput>#content#</cfoutput>
+--->
+<cfcontent type="#content_type#"><cfoutput>#content#</cfoutput>
