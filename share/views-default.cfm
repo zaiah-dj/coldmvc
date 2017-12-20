@@ -13,6 +13,10 @@ views-default.cfm
 @summary
  	Default 'It Works!' style page for successful ColdMVC deployments. 
 @end
+
+@sum
+	1a3e00cce2fc2fafa51ff672a82c5518
+@end
   --->
 <html>
 

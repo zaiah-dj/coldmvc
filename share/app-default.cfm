@@ -13,6 +13,10 @@ app-default.cfm
 @summary
  	Model file	
 @end
+
+@sum
+	a0c4ad8039c926b72977f80c8f5dca4c
+@end
   --->
 <cfscript>
 	model = {};

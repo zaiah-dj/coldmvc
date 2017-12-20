@@ -1,4 +1,4 @@
-#!/bin/sh -
+#!/bin/bash -
 # -------------------------------------------- #
 # coldmvc.sh
 #
@@ -33,6 +33,7 @@
 # Variable list
 PROGRAM_NAME=coldmvc
 DIR=
+THIS_SITE=
 #SRC= This will be filled out during the install process...
 SRC=.
 CREATE=0
@@ -55,9 +56,11 @@ usage()
 	STATUS=${2:-0}
 
 #-t, --test              Test out data.json with parameters.
+#  --maintenance       Put a site in maintenance mode.
 	cat <<USAGES
 $0:
 -c, --create            Create a new instance. 
+    --activate <dir>    Activate a site (turn off the 'default.cfm' that ships with the framework)
     --apachify          Create an Apache-style virtual host and an .htaccess file.
     --no-git            Don't create a Git repo.
 -b, --basedir <arg>     Specify a base directory.
@@ -87,6 +90,19 @@ do
 		-c|--create)
 			CREATE=1
 		;;
+
+		--activate)
+			# Turn off the 'default' that ships
+			ACTIVATE=1
+			# Check...
+			if [ ! -z "$2" ]
+			then
+				[[ "${2:0:1}" == "-" ]] || THIS_SITE="$2"
+				shift
+			fi	
+		;;
+
+		#--maintenance)MAINTAIN=1;;
 
 		--apachify)
 			# Create an Apache style virtual host and an .htaccess file
@@ -167,7 +183,7 @@ done
 
 
 # CREATE NEW CMVC INSTANCES
-if [ $CREATE -eq 1 ]
+if [ $CREATE -eq 33 ]
 then
 	# ColdMVC's source code will probably be at /etc/
 	# When built, this variable will probably be here
@@ -350,6 +366,58 @@ LUCEE_HOST
 	#Create a new VirtualHost for Lucee
 	#sed -i "{ s|\(<!-- ADD NEW HOSTS HERE -->\)|\1\n${HOST_CONTENT}| }" $LUCEE_CONF
 
+fi
+
+
+
+# ACTIVATE NEW CMVC INSTANCES
+if [ $ACTIVATE -eq 1 ]
+then
+	#
+	[ $VERBOSE -eq 1 ] && printf "Checking for valid ColdMVC instance '$THIS_SITE'...\n" 
+
+	# Could be thrown after --create, so prefill
+	THIS_SITE="${THIS_SITE:-$DIR}"
+
+	# Check for the folder 
+	test ! -z "$THIS_SITE" || { printf "Folder not specified...\n"; exit 1; }
+
+	# Check that it's not an option...
+	[ "${THIS_SITE:0:1}" == "-" ] && { printf "No folder supplied, got option flag...\n"; exit 1; }
+
+	# Check that it's a real folder
+	test -d "$THIS_SITE" || { printf "Folder does not exist...\n"; exit 1; }
+
+	# Check that it's an instance
+	test -d "$THIS_SITE/app" && test -d "$THIS_SITE/views" || { printf "Folder is not a ColdMVC instance...\n"; exit 1; }
+		
+	# Check that the files we need to move exist
+	test -f $THIS_SITE/app/default.cfm || { printf "Default model file may have already been modified...\n"; exit 1; }
+	test -f $THIS_SITE/views/default.cfm || { printf "Default model file may have already been modified...\n"; exit 1; }
+
+	# MD5s
+	# 40f7640ea4c8c584ca8dca6e9d6de90f  app-default.cfm
+	# 0e43c92b7c7091c0f293cba12d2fd103  views-default.cfm
+	APPD_MD5="40f7640ea4c8c584ca8dca6e9d6de90f"
+	VIEWD_MD5="0e43c92b7c7091c0f293cba12d2fd103"
+	APPD_NEW_MD5=`md5sum $THIS_SITE/app/default.cfm | awk '{ print $1 }'`
+	VIEWD_NEW_MD5=`md5sum $THIS_SITE/views/default.cfm | awk '{ print $1 }'`
+echo $APPD_NEW_MD5 $APPD_MD5
+	
+	# Check the files	
+	[ $VERBOSE -eq 1 ] && printf "Checking for valid checksums...\n" 
+	[[ $APPD_NEW_MD5 != $APPD_MD5 ]] || { printf "Default model file may have already been modified...\n"; exit 1; }
+	[[ $VIEWD_NEW_MD5 != $VIEWD_MD5 ]] || { printf "Default model file may have already been modified...\n"; exit 1; }
+
+	# Move both files to the std directory under a differnet name
+	[ $VERBOSE -eq 1 ] && printf "Moving files...\n" 
+	mv $THIS_SITE/app/default.cfm $THIS_SITE/std/app-default.cfm	
+	mv $THIS_SITE/views/default.cfm $THIS_SITE/std/views-default.cfm	
+
+	# Make some new ones
+	touch $THIS_SITE/app/default.cfm
+	touch $THIS_SITE/views/default.cfm
+	[ $VERBOSE -eq 1 ] && printf "Done.\n" 
 fi
 
 
