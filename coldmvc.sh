@@ -38,6 +38,7 @@ THIS_SITE=
 SRC=.
 CREATE=0
 NO_GIT=0
+ACTIVATE=0
 VERBOSE=0
 ERR_NODIR=1
 ERR_NONAME=2
@@ -421,6 +422,46 @@ echo $APPD_NEW_MD5 $APPD_MD5
 fi
 
 
+# APACHE VHOST
+if [ $APACHIFY -eq 1 ]
+then
+	# Make sure the user specified a directory
+	[ ! -z "$DIR" ] || { err "No directory specified for vhost...\n" 1; }
+
+	# Make the user specified a directory
+	[ -d "$DIR" ] || { err "Directory does not exist, invalid vhost...\n" 1; }
+
+	# Find the virtualhost directory?
+	# ....
+
+	# Find the server directory?
+	# ....
+
+	# Message
+	printf "# Paste the following into your Apache configuration file...\n"  
+	{
+cat <<EOF
+# $DOMAIN - `date +%F`
+<VirtualHost *:80>
+  	# Admin email, Server Name (domain name) and any aliases
+  	ServerName  $DOMAIN
+  	ServerAlias www.$DOMAIN
+
+  	# Index file and Document Root (where the public files are located)
+  	DocumentRoot /var/www/`basename $DIR`/public/
+
+  	# Custom log file locations
+  	#LogLevel warn
+  	#ErrorLog  /var/www/deep909.com-r/log/srv_error.log
+  	#CustomLog /var/www/deep909.com-r/log/srv_access.log combined
+
+		# Index
+		DirectoryIndex index.cfm
+</VirtualHost>
+EOF
+	} > /dev/stdout 
+
+fi
 
 #cp $SRC/share/apache_htaccess $DIR/.htaccess
 # vim: ff=unix
