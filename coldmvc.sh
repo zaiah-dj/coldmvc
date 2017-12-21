@@ -42,6 +42,7 @@ ACTIVATE=0
 VERBOSE=0
 ERR_NODIR=1
 ERR_NONAME=2
+APACHIFY=0
 
 # An error function
 err() {
@@ -184,7 +185,7 @@ done
 
 
 # CREATE NEW CMVC INSTANCES
-if [ $CREATE -eq 33 ]
+if [ $CREATE -eq 1 ]
 then
 	# ColdMVC's source code will probably be at /etc/
 	# When built, this variable will probably be here
