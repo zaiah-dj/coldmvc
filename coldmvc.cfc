@@ -158,13 +158,22 @@ coldmvc.cfc
 
  * -------------------------------------------------- */
 
+
+
+/*Define our component here*/
 component name = "ColdMVC" {
+	/*C-style array to index error messages.  Cleans up a lot*/
+	ERR_KEY_NOT_FOUND = 1;
+
+	this.errors = [
+
+	];
+
 	/*VARIABLES - None of these get a docblock. You really don't need to worry with these*/
-	//Log message
 	this.logString = "";
+
 	this.dumpload = 1;
 
-	//Other directories
 	this.root_dir = getDirectoryFromPath(getCurrentTemplatePath());
 
 	this.current  = getCurrentTemplatePath();
@@ -413,13 +422,7 @@ component name = "ColdMVC" {
 		else {
 			b = check_deep_key( appdata, "routes", rname, "content-type" );
 		}
-
 		v = "std/" & ((b) ? "mime" : "html") & "-view.cfm";
-
-		//FIXME: Mime-view needs this
-		if ( b ) {
-			content_type = appdata.routes[ rname ][ "content-type" ];
-		}
 
 		//Include pages like normal if status is there...
 		if ( !StructKeyExists( a, "status" ) )
@@ -450,10 +453,12 @@ component name = "ColdMVC" {
 	//@end   
 	private function logReport (Required String message) 
 	{
+		/*
 		//Throw an error to get access to the exception 
 		line=0; file="";
-		try  
-		 { callFin(); } 
+		try { 
+			callFin();
+		}
 		catch (any e) { 
 			template = e.TagContext[ 2 ].template; 
 			line = e.TagContext[ 2 ].line; 
@@ -462,6 +467,7 @@ component name = "ColdMVC" {
 		//Append the line number to whatever text is being written
 		this.logstring = ( StructKeyExists( this, "addLogLine") && this.addLogLine ) ? "<li>At line " & line & " in template '" & template & "': " & message & "</li>" : "<li>" & message & "</li>";
 		(StructKeyExists(this, "verboseLog") && this.verboseLog) ? writeoutput( this.logString ) : 0;
+		*/
 	}
 
 
@@ -607,6 +613,7 @@ component name = "ColdMVC" {
 		if (!match) 
 		{
 			render_page(
+				status_line = 0,
 				status   = 500, 
 				abort    = true, 
 				errorMsg = ToString("A function requested the page " & name & " in the folder " & 
@@ -829,6 +836,7 @@ component name = "ColdMVC" {
 					}
 				}
 			}
+
 			logReport( "Success" );
 		}
 		catch (any e) 
@@ -1235,92 +1243,143 @@ component name = "ColdMVC" {
 	}
 
 
-	//@title: validate 
-	//@args :
-	//@end
-	//@body :
-	//	Validate a struct using a model struct
-	//@end   
-	public Struct function validate ( t /*Struct to check*/, 		v /*Struct to validate with*/ )
-	{
-		//As long as everything was good, we assume the status is true.
+	//Return formatted error strings
+	//TODO: More clearly specified that this function takes variables arguments
+	private Struct function strerror ( code ) {
+		argArr = [];
+		errors = {
+			 errKeyNotFound = "Required key '%s' does not exist."
+			,errValueLessThan = "Value of key '%s' fails -lt (less than) test."
+			,errValueGtrThan = "Value of key '%s' fails -gt (greater than) test."
+			,errValueLtEqual= "Value of key '%s' fails -lt (less than or equal to) test."
+			,errValueGtEqual = "Value of key '%s' fails -gte (greater than or equal to) test."
+			,errValueEqual = "Value of key '%s' fails -eq (equal to) test."
+			,errValueNotEqual = "Value of key '%s' fails -neq (not equal to) test."
+			,errFileExtMismatch = "The extension of the submitted file '%s' does notmatch the expected mimetype for this field."
+			,errFileSizeTooLarge = "Size of field '%s' (%d bytes) is larger than expected size %d bytes."
+			,errFileSizeTooSmall = "Size of field '%s' (%d bytes) is smaller than expected size %d bytes."
+		};
+
+		for ( arg in arguments ) {
+			if ( arg != 'code' ) {
+				//Do an explicit cast here if need be... 
+				//(get type...)
+				//ArrayAppend( argArr, javacast( arguments[arg], type ) );
+				ArrayAppend( argArr, arguments[arg] );
+			}
+		}
+	
+		str = createObject("java","java.lang.String").format( errors[code], argArr );
+
+		return {
+			status = false,
+			message = str 
+		};
+	}	
+
+
+	//A quick set of tests...
+	public function validateTests( ) {
+		// These should all throw an exception and stop
+		// req
+		// req + lt	
+		// req + gt	
+		// req + lte
+		// req + gte
+		// req + eq	
+		// req + neq 
+		
+		// These should simply discard the value from the set
+		// An error string can be set to log what happened.
+		// lt	
+		// gt	
+		// lte
+		// gte
+		// eq	
+		// neq 
+
+	}
+
+	//Check a struct for certain values by comparison against another struct
+	public function cmValidate ( cStruct, vStruct ) {
 		s = StructNew();
 		s.status = true;
-
-		//Results are where things should go...
+		s.message = "";
 		s.results = StructNew();
 
 		//Loop through each value in v
-		for ( x in v )
-		{
-			//Required
-			if ( structKeyExists( v[ x ], "req" ) )
-			{
-				//The whole thing should fail if this isn't here...
-				if ( !structKeyExists( t, x ) )
-				{
-					return {
-						status = false,
-						message = "Required key '" & x & "' does not exist."
-					};
+		for ( key in vStruct ) {
+			//Short names
+			vk = vStruct[ key ];
+
+			//If key is required, and not there, stop
+			if ( structKeyExists( vk, "req" ) ) {
+				if ( (!structKeyExists( cStruct, key )) && (vk[ "req" ] eq true) ) {
+					return strerror( 'errKeyNotFound', key );
 				}
 			}
 
+			//No use moving forward if the key does not exist...
+			if ( !structKeyExists( cStruct, key ) ) {
+				//Use the 'none' key to set defaults on values that aren't required
+				if ( StructKeyExists( vk, "ifNone" ) ) {
+					s.results[ key ] = vk[ "ifNone" ];	
+				} 
+				continue;
+			}
+ 
+			//Set this key
+			ck = cStruct[ key ];
+
 			//Less than	
-			if ( structKeyExists( v[ x ], "lt" ) )
-				if ( !( t[ x ] lt v[ x ]["lt"] ) )
-					return { status = false, message = "Value of key '" & x & "' fails -lt test." };
+			if ( structKeyExists( vk, "lt" ) ) {
+				//Check types
+				if ( !( ck lt vk["lt"] ) ) {
+					return strerror( 'errValueLessThan', key );
+				}	
+			} 
 
 			//Greater than	
-			if ( structKeyExists( v[ x ], "gt" ) )
-				if ( !( t[ x ] gt v[ x ]["gt"] ) )
-					return {status = false,message = "fail fail fail"};
-
-			//Less than or equal 
-			if ( structKeyExists( v[ x ], "lte" ) )
-				if ( !( t[ x ] lte v[ x ]["lte"] ) )
-					return {status = false,message = "fail fail fail"};
-
-			//Greater than or equal
-			if ( structKeyExists( v[ x ], "gte" ) )
-				if ( !( t[ x ] gte v[ x ]["gte"] ) )
-					return {status = false,message = "fail fail fail"};
-	 
-			//Equal
-			if ( structKeyExists( v[ x ], "eq" ) )
-				if ( !( t[ x ] eq v[ x ]["eq"] ) )
-					return {status = false,message = "fail fail fail"};
-	 
-			//Not equal
-			if ( structKeyExists( v[ x ], "neq" ) )
-				if ( !( t[ x ] neq v[ x ]["neq"] ) )
-					return {status = false,message = "fail fail fail"};
-
-			//This is the lazy way to do this...
-			s.results[ x ] = t[ x ];
-	/*
-			//String contains
-			if ( structKeyExists( v[ x ], "contains" ) )
-			{
-				if ( !( t[ x ] neq v[ x ].neq ) )
-				{
-					return {
-						status = false,
-						message = "fail fail fail"
-					};	
+			if ( structKeyExists( vk, "gt" ) ) {
+				if ( !( ck gt vk["gt"] ) ) {
+					return strerror( 'errValueGtrThan', key );
 				}	
 			}
 
-			//Custom
-			if ( structKeyExists( v[ x ], "custom" ) )
-			{
+			//Less than or equal 
+			if ( structKeyExists( vk, "lte" ) ) {
+				if ( !( ck lte vk["lte"] ) ) {
+					// return { status = false, message = "what failed and where at?" }
+					return strerror( 'errValueLtEqual', key );
+				}	
+			} 
 
+			//Greater than or equal
+			if ( structKeyExists( vk, "gte" ) ) {
+				if ( !( ck gte vk["gte"] ) ) {
+					return strerror( 'errValueGtEqual', key );
+				}	
 			}
-	*/
+	 
+			//Equal
+			if ( structKeyExists( vk, "eq" ) ) {
+				if ( !( ck eq vk["eq"] ) ) {
+					return strerror( 'errValueEqual', key );
+				}	
+			}
+	 
+			//Not equal
+			if ( structKeyExists( vk, "neq" ) ) {
+				if ( !( ck neq vk["neq"] ) ) {
+					return strerror( 'errValueNotEqual', key );
+				}	
+			} 
+
+			//This is the lazy way to do this...
+			s.results[ key ] = ck;
 
 			//Check file fields
-			if ( structKeyExists( v[ x ], "file" ) )
-			{
+			if ( structKeyExists( vk, "file" ) ) {
 				//For ease, I've added some "meta" types (image, audio, video, document)
 				meta_mime  = {
 					image    = "image/jpg,image/jpeg,image/pjpeg,image/png,image/bmp,image/gif",
@@ -1341,69 +1400,47 @@ component name = "ColdMVC" {
 
 				//Most exclusive, just support certain mime types
 				//(Array math could allow one to build an extension filter)
-				if ( structKeyExists( v[ x ], "mimes" ) )
-					acceptedMimes = v[ x ].mimes;
+				if ( structKeyExists( vk, "mimes" ) )
+					acceptedMimes = vk.mimes;
 				//No mimes, ext or type were specified, so fallback
-				else if ( !structKeyExists( v[ x ], "type" ) )
+				else if ( !structKeyExists( vk, "type" ) )
 					acceptedMimes = "*";
-				else if ( structKeyExists( v[ x ], "ext" ) )
-				{
+				else if ( structKeyExists( vk, "ext" ) ) {
 					acceptedMimes = "*";
-					acceptedExt = v[ x ].ext;
+					acceptedExt = vk.ext;
 				}	
 				//Assume that type was specified
-				else 
-				{
-					acceptedMimes = structKeyExists( meta_mime, v[ x ].type ) ? meta_mime[ v[x].type ] : "*";
-					acceptedExt = structKeyExists( meta_ext, v[ x ].type ) ? meta_ext[ v[x].type ] : 0;
+				else {
+					acceptedMimes = structKeyExists( meta_mime, vk.type ) ? meta_mime[ vk.type ] : "*";
+					acceptedExt = structKeyExists( meta_ext, vk.type ) ? meta_ext[ vk.type ] : 0;
 				}
 			
 				//Upload the file
-				file = upload_file( t[ x ], acceptedMimes );
-				if ( file.status )
-				{
+				file = _upload_file( ck, acceptedMimes );
+
+				if ( file.status ) {
 					//Check extensions if acceptedMimes is not a wildcard
-					if ( acceptedExt neq 0 )
-					{
-						if ( not listFindNoCase( acceptedExt, file.results.serverFileExt ) )
-						{
+					if ( acceptedExt neq 0 ) {
+						if ( !listFindNoCase( acceptedExt, file.results.serverFileExt ) ) {
 							//Remove the file
 							FileDelete( file.results.fullpath );
-							return {
-								status = false,
-								message = "The extension '" & file.results.serverFileExt & "' is not supported for this file field."
-							};
+							return strerror( 'errFileExtMismatch', file.results.serverFileExt );
 						}
 					} 
 
 					//Check expected limits ( you can even block stuff from a value in data.json )
-					if ( structKeyExists( v[ x ], "sizeLt" ) && !( file.results.oldfilesize lt v[ x ].sizeLt ) )
-					{
+					if ( structKeyExists( vk, "sizeLt" ) && !( file.results.oldfilesize lt vk.sizeLt ) ) {
 						FileDelete( file.results.fullpath );
-						return {
-							status = false,
-							message = "Size of field '" & x & "' is too large. " & 
-												"(Got " & file.results.oldfilesize & " bytes, " & 
-												"expected <" & v[ x ].sizeLt & " bytes)."
-						};	
+						return strerror( 'errFileSizeTooLarge', key, file.results.oldfilesize, vk.sizeLt );
 					} 
 
-					if ( structKeyExists( v[ x ], "sizeGt" ) && !( file.results.oldfilesize gt v[ x ].sizeGt ) )
-					{
+					if ( structKeyExists( vk, "sizeGt" ) && !( file.results.oldfilesize gt vk.sizeGt ) ) {
 						FileDelete( file.results.fullpath );
-						return {
-							status = false,
-							message = "Size of field '" & x & "' is too small. " & 
-												"(Got " & file.results.oldfilesize & " bytes, " & 
-												"expected >" & v[ x ].sizeGt & " bytes)."
-						};	
+						return strerror( 'errFileSizeTooSmall', key, file.results.oldfilesize, vk.sizeLt );
 					} 
 				}
-
-				//...
-				s.results[ x ] = file.results; 
-			} // file
-		
+				s.results[ key ] = file.results; 
+			}
 		}
 		return s;
 	}
@@ -1510,6 +1547,191 @@ component name = "ColdMVC" {
 		}
 	}
 
+	/*checkBindType = Checks how arguments are bound to one another.*/
+	private function checkBindType ( 
+	   ap
+	  ,String parameter
+ 	)
+	{
+		//Pre-initialize 'value' and 'type'
+		v = {};
+		v.value = "";
+		v.name  = parameter;
+		v.type  = "varchar";
+
+		//If the dev only has one value and can assume it's a varchar, then use it (likewise I can probably figure out if this is a number or not)
+		if ( !IsStruct( ap ) ) 
+		{
+			v.value = ( Left(ap,1) eq '##' && Right(ap,1) eq '##' ) ? Evaluate( ap ) : ap;
+			try {
+				//coercion has failed if I can't do this...
+				__ = value + 1;
+				v.type = "integer";
+			}
+			catch (any e) {
+				//writeoutput( "conversion fail: " & e.message & "<br />" & e.detail & "<br />" );
+				v.type = "varchar";
+			}
+		}
+		else
+		if ( StructKeyExists( ap, parameter ) ) {
+			//Is ap.parameter a struct?	
+			//If not, then it's just a value
+			if ( !IsStruct( ap[ parameter ] ) )
+				v.value = ( Left(ap[parameter],1) eq '##' && Right(ap[parameter],1) eq '##' ) ? Evaluate( ap[parameter] ) : ap[parameter];
+				//value = Evaluate( ap[ parameter ] );
+			else 
+			{
+				if ( StructKeyExists( ap[ parameter ], "value" ) )
+					v.value = ( Left(ap[parameter]["value"],1) eq '##' && Right(ap[parameter]["value"],1) eq '##' ) ? Evaluate( ap[parameter]["value"] ) : ap[parameter]["value"];
+					//value = Evaluate( ap[ parameter ][ "value" ] );
+				if ( StructKeyExists( ap[ parameter ], "type" ) )
+					v.type = ap[ parameter ][ "type" ];
+			}
+		}
+
+		//See test results	
+		//writeoutput( "Interpreted value is: " & value & "<br /> & "Assumed type is: " & type & "<br />" ); 
+		//nq.addParam( name = parameter, value = value, cfsqltype = type );
+		return v; 
+	}
+
+
+	public function dbExec ( String datasource = "#data.source#", String filename, String string, bindArgs ) {
+		//Set some basic things
+		Name = "query";
+		SQLContents = "";
+
+		//Check for either string or filename
+		if ( !StructKeyExists( arguments, "filename" ) && !StructKeyExists( arguments, "string" ) ) {
+			return { 
+				status= false, 
+				message= "Either 'filename' or 'string' must be present as an argument to this function."
+			};
+		}
+
+		//Make sure data source is a string
+		if ( !IsSimpleValue( arguments.datasource ) )
+			return { status= false, message= "The datasource argument is not a string." };
+
+		if ( arguments.datasource eq "" )
+			return { status= false, message= "The datasource argument is blank."};
+
+		//Then check and process the SQL statement
+		if ( StructKeyExists( arguments, "string" ) ) {
+			if ( !IsSimpleValue( arguments.string ) )
+				return { status= false, message= "The 'string' argument is neither a string or number." };
+
+			Name = "_anonymous";
+			SQLContents = arguments.string;
+		}
+		else {
+			//Make sure filename is a string (or something similar)
+			if ( !IsSimpleValue( arguments.filename ) )
+				return { status= false, message= "The 'filename' argument is neither a string or number." };
+
+			//Get the file path.	
+			fp = this.constantmap[ "/sql" ] & "/" & arguments.filename;
+			//return { status= false, message= "#current# and #root_dir#" };
+
+			//Check for the filename
+			if ( !FileExists( fp ) )
+				return { status= false, message= "File " & fp & " does not exist." };
+
+			//Get the basename of the file
+			Base = find( "/", arguments.filename );
+			if ( Base ) {
+				0;	
+			}
+
+			//Then get the name of the file sans extension
+			Period = Find( ".", arguments.filename );
+			Name = ( Period ) ? Left(arguments.filename, Period - 1 ) : "query";
+
+			//Read the contents
+			SQLContents = FileRead( fp );
+/*
+			//Finally, CFML code could be in there.  Evaluate it.
+			try {
+			SQLContents = Evaluate( SQLContents );
+			}
+			catch (any ee) {
+				return { 
+					status = false
+				 ,message = "#ee#"
+				 ,results = {}
+				};
+			}
+			writedump( SQLContents ); abort;
+*/
+		}
+
+		//Set up a new Query
+		q = new Query( datasource="#arguments.datasource#" );	
+		q.setname = "#Name#";
+		//q.setdatasource = arguments.datasource;
+
+		//If binds exist, do the binding dance 
+		if ( StructKeyExists( arguments, "bindArgs" ) ) {
+			if ( !IsStruct( arguments.bindArgs ) ) 
+				return { status= false, message= "Argument 'bindArgs' is not a struct." };
+
+			for ( n in arguments.bindArgs ) {
+				value = arguments.bindArgs[n];
+				type = "varchar";
+				if ( IsSimpleValue( value ) ) {
+					try {__ = value + 1; type = "integer";}
+					catch (any e) { type="varchar";}
+				}
+				else if ( IsStruct( value ) ) {
+					v = value;
+					if ( !StructKeyExists( v, "type" ) || !IsSimpleValue( v["type"] ) )
+						return { status = false, message = "Key 'type' does not exist in 'bindArgs' struct key '#n#'" };	
+					if ( !StructKeyExists( v, "value" ) || !IsSimpleValue( v["value"] ) ) 
+						return { status = false, message = "Key 'value' does not exist in 'bindArgs' struct key '#n#'" };	
+					if ( StructKeyExists( v, "list" ) && IsSimpleValue( v["list"] ) ){ 
+						isList = 1;
+					}
+					type  = v.type;
+					value = v.value;
+				}
+				else {
+					return { 
+						status = false, 
+						message = "Each key-value pair in bindArgs must be composed of structs."
+					};
+				}
+
+				q.addParam( 
+					name=LCase(n), 
+					value=value, 
+					cfsqltype=type, 
+					list="#iif(isDefined("isList") && isList gt 0, DE("yes"),DE("no"))#" 
+				);
+			}
+		}
+
+		//Execute the query
+		try { rr = q.execute( sql = SQLContents ); }
+		catch (any e) {
+			return { 
+				status  = false,
+			  message = "Query failed. #e.message# - #e.detail#."
+			};
+		}
+
+		//Put results somewhere.
+		resultSet = rr.getResult();
+
+		//Return a status
+		return {
+			status  = true
+		 ,message = "SUCCESS"
+		 ,results = ( !IsDefined("resultSet") ) ? {} : resultSet
+		 ,prefix  = rr.getPrefix()
+		};
+	}
+
 
 	//@title: init
 	//@args :
@@ -1531,33 +1753,16 @@ component name = "ColdMVC" {
 			}
 		}
 
-		//Load JSON manifest with route information.
+		//Now I can just run regular stuff
 		try {
-			logReport( "Loading JSON file" );
-			jsonMfst = FileRead(getDirectoryFromPath(getCurrentTemplatePath()) & "data.json");
+			logReport( "Loading data.cfm..." );
+			include "data.cfm";
+			appdata = manifest;
+			//appdata = CreateObject( "component", "data" );
 			logReport( "Success" );
 		}
 		catch (any e) {
-			err={ exception = e };
-	writedump( e );
-			render_page(status=500, errorMsg="Error reading data.json");
-			abort;
-		}
-
-
-		//Parse JSON manifest with route information.
-		try {
-			logReport( "Parsing JSON file" );
-			appdata=DeserializeJSON(jsonMfst);
-			logReport( "Success" );
-		}
-		catch (any e) {
-			status_line = 0;
-			render_page(
-				status=500, 
-				errorMsg=ToString("Deserializing data.json failed"), 
-				stackTrace=e
-			);
+			render_page(status=500, errorMsg="Deserializing data.cfm failed", stackTrace=e);
 			abort;
 		}
 
@@ -1585,84 +1790,15 @@ component name = "ColdMVC" {
 			}
 		}
 
-		if ( StructKeyExists( appdata, "settings" ) ) 
-			for ( key in keys._optional )
+		if ( StructKeyExists( appdata, "settings" ) ) {
+			for ( key in keys._optional ) {
 				this[key] = (StructKeyExists(appdata.settings, key)) ? appdata.settings[ key ] : false;
+			}
+		}
 
 		this.app = appdata;	
 		return this;
 	}
 
 } /*end component declaration*/
-
-	/**
-	 * Copy me
-	 *
-	 */
 </cfscript>
-
-	<!---
-	</cfcomponent>
-	--->
-	<!---
-	<!---
-	execute_sql.cfm
-
-	Executes an SQL query from file or string.  Specifying dump=true will do a 
-	cfdump of the query. 
-
-	User may specify fields from the function versus having to fill out cfset 
-	or cfparam or some other variable in some weird place within the code.  
-	This prevents untracked globals from running around too.
-	--->
-
-	<!--- Use this to execute queries properly --->
-	<cffunction 
-		name=dynquery 
-		description="Runs queries."
-		hint="Runs queries and returns the data in a struct."
-		returnType="struct"
-	>
-		<cfargument name="queryPath" required="yes">
-		<cfargument name="queryVar" required="yes">
-		<cfargument name="queryDatasource" required="no" default="#data.DATASOURCE#">
-		<cfargument name="debuggable" required="no" default=false>
-
-		<cfparam name="myRes" default="">
-		<cfset myRes=StructNew()>
-
-		<!--- Output stuff --->
-		<cfif debuggable gt 0>
-			<cfdump var="#queryPath#">
-			<cfdump var="#queryVar#">
-			<cfdump var="#queryDatasource#">
-		</cfif>
-
-		<cftry>
-			<cfquery name="__results" result="__object" datasource="#queryDatasource#">
-				<cfinclude template="#queryPath#">
-			</cfquery>
-		<cfcatch>
-			<cfdump var="#cfcatch#">
-			<cfsavecontent variable="killerBob">
-				<cfset err="#cfcatch.TagContext[1]#">
-				<cfoutput>SQL execution error at file #err.template#, line #err.Line#. #cfcatch.message#</cfoutput>
-				<!---
-				<cfoutput>#cfcatch.message#</cfoutput>
-				--->
-			</cfsavecontent>
-			<cfset myRes.status = 0>
-			<cfset myRes.object = QueryNew("nothing")>   <!---Any way to make a blank query--->
-			<cfset myRes.error = "#killerBob#">
-			<cfset myRes.results = QueryNew("nothing")>
-			<cfreturn myRes>
-		</cfcatch>
-		</cftry>
-
-		<cfset myRes.status = 1>
-		<cfset myRes.error = "">
-		<cfset myRes.object = __object>
-		<cfset myRes.results = __results>
-		<cfreturn myRes>
-	</cffunction>
-	--->
