@@ -11,13 +11,13 @@ ColdMVC is a web framework for ColdFusion and Lucee application servers.   It is
 ColdMVC can be downloaded via its <a href="http://ramarcollins.com/coldmvc">homesite</a> or via Github.  You can clone the latest version by using the following on your system:
 
 1. <pre>
-git clone https://github.com/zaiah-dj/coldmvc.git
-</pre>
+	 git clone https://github.com/zaiah-dj/coldmvc.git
+	</pre>
 
 2. <pre>
-cd coldmvc
-make install # You'll probably need to be root
-</pre>
+	cd coldmvc
+	make install # You'll probably need to be root
+	</pre>
 
 Although this tooling does not require a server, it should go without saying
 that ColdMVC will require either ColdFusion or Lucee to work correctly.  If you are totally new to ColdFusion and/or Lucee, you will want to get a copy and install it on your system.  I would surmise the easiest way to get going is to start with Lucee's express build.
