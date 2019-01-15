@@ -45,7 +45,7 @@ ColdMVC is administered via shell script right now, and has been tested on Linux
 
 New projects can be setup using a command line similar to the the following.
 <pre>
-./coldmvc.sh -c -f /path/to/coldfusion/webroot/path-of-site -n 'site-name'
+coldmvc --create --folder /path/to/coldfusion/webroot/path-of-site -n 'site-name'
 </pre>
 
 This is the absolute smallest set of options needed to create an instance of a
@@ -55,8 +55,8 @@ Notice that you will need to specify the <i>absolute</i> path to where your Luce
 <a href="http://localhost:8888/site-name">http://localhost:8888/site-name</a>
 
 You should see something similar to the following screenshots. 
-<img style="margin: 0 auto" src="shots/first-page-400x400.png" />
-<img style="margin: 0 auto" src="shots/second-page-400x400.png" />
+<img style="margin: 0 auto" src="img/first-page-400x400.png" />
+<img style="margin: 0 auto" src="img/second-page-400x400.png" />
 
 Or if you were unfortunate, you will see an exception with a big, fat 500 error message.  If something like this occurs, please contact me via ramar dot collins at gmail dot com, and I'll try to help you through the error.
 
