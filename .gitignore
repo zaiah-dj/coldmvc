@@ -4,6 +4,4 @@ examples/
 src/
 vendor/
 *.class
-*.png
-match.sh
-env.sh
+!img/*.png
