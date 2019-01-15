@@ -1,14 +1,14 @@
 # Build variables
 ARCHIVEDIR=..
 ARCHIVEFMT = gz
-MANPREFIX = ${PREFIX}/share/man
 LDDIRS = -L$(PREFIX)/lib
 LDFLAGS =
 SHARED_LDFLAGS =
 CC = gcc
 PREFIX = /usr/local
-SHARE = $(PREFIX)/share
-BIN = $(PREFIX)/bin
+SHAREDIR = $(PREFIX)/share
+MANDIR = ${PREFIX}/share/man
+BINDIR = $(PREFIX)/bin
 CONFIG = /etc
 
 # Program variables
@@ -28,20 +28,31 @@ run:
 	@java CLI 
 
 
+pkg:
+	git archive master HEAD | tar czf - > /tmp/$(NAME).`date +%F`.`date +%H-%M-%S`.tar.gz
+
+# Probably should be root
 install:
-	-test -d $(PREFIX) || mkdir $(PREFIX)
-	-test -d $(SHARE) || mkdir $(SHARE)
-	-cp ./bin/$(NAME).sh $(PREFIX)/bin/$(NAME)
-	-cp ./share/*.cfm $(PREFIX)/share
+	-test -d $(PREFIX) || mkdir -p $(PREFIX)/{share,share/man,bin}/
+	-mkdir -p $(PREFIX)/share/$(NAME)/
+	-cp ./$(NAME) $(PREFIX)/bin/$(NAME)
+	-cp ./share/*.cfm $(PREFIX)/share/$(NAME)/
 	-cp ./etc/$(NAME).conf $(CONFIG)/
+	-sed -i 's;__PREFIX__;$(PREFIX);' $(CONFIG)/$(NAME).conf 
+
+# install man pages at some point, for the tool really
+
+# ...
 #	-sqlite3 $(CONFIG)/$(NAME)_config.db < populate.sql
 
-changelog:
-	-printf ''>/dev/null		
+# would really like to publish my changelogs too, could just be a hook
+#changelog:
+#	-printf ''>/dev/null		
 
 uninstall:
-	-rm -f $(PREFIX)/include/$(NAME).h
-	-rm -rf $(PREFIX)/include/$(NAME)
+	-rm -f $(PREFIX)/bin/$(NAME)
+	-rm -f $(CONFIG)/$(NAME).conf
+	-rm -rf $(PREFIX)/share/$(NAME)/
 
 # Version control
 commit:

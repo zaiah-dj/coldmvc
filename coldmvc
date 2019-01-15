@@ -28,8 +28,11 @@
 # - Configure with nginx 
 # -------------------------------------------- #
 
-# Variable list
+# const 
 PROGRAM_NAME=`basename $0`
+CONF_FILE="/etc/coldmvc.conf"
+
+# unconst
 DIR=
 THIS_SITE=
 #SRC= This will be filled out during the install process...
@@ -63,14 +66,14 @@ usage() {
 #  --maintenance       Put a site in maintenance mode.
 #-e, --engine <arg>       Specify which CFML engine you're running [ Lucee, Coldfusion ]
 	cat <<USAGES
-$0:
+$PROGRAM_NAME:
 -c, --create             Create a new instance. 
     --activate <dir>     Activate a site (turn off defaults that ship with new projects)
     --apache             Create an .htaccess file
     --nginx              Create an Apache-style virtual host and an .htaccess file.
     --iis                Create an Apache-style virtual host and an .htaccess file.
     --no-git             Don't create a Git repo.
--i, --virtual-host <arg> Create a $$SERVER-style virtual host and an .htaccess file.
+-i, --virtual-host <arg> Create a \$SERVER-style virtual host and an .htaccess file.
 -e, --ses                Enable search engine safe URLs
 -b, --basedir <arg>      Specify a base directory.
 -f, --folder <arg>       Specify which folder to use when creating a new instance.
@@ -83,29 +86,6 @@ $0:
 USAGES
 
 	exit $STATUS
-}
-
-
-# Negotiate arguments and flags
-argIsFlag() {
-	if [ -z "$1" ]
-	then
-		echo -1
-	else
-		# If $1 is a dash, assume stdout
-		if [ ${#1} -eq 1 ] && [ "${1:0:1}" == '-' ]
-		then
-			echo 0
-		# If $1 starts with two dashes, its probably an option and you should
-		# throw
-		elif [ "${1:0:1}" == '-' ] && [ "${1:1:1}" == '-' ] 
-		then
-			echo -1
-		# Assume that the name of a seperate file was given	
-		else 
-			echo 1 
-		fi
-	fi
 }
 
 
@@ -151,19 +131,23 @@ do
 		# Enable the capacity to serve SES URLs via server configuration
 		-e|--ses|--search-engine-safe)
 			DO_SES=1
-			TYPE=`argIsFlag "$2"`
-			[ $TYPE -lt 0 ] && err "Must specify a file name for the --ses flag (or use - for stdout)." 1  
-			[ $TYPE -eq 0 ] && SES_FILE=/dev/stdout || SES_FILE=$2
 			shift
+			# Check...
+			if [ ! -z "$2" ]
+			then
+				[[ "${2:0:1}" == "-" ]] || SES_FILE="$2"
+				shift
+			fi	
 		;;
 
 		# Generate a virtual host file for a particular server configuration
 		-i|--virtual-host)
 			DO_GENVHOST=1
-			TYPE=`argIsFlag "$2"`
-			[ $TYPE -lt 0 ] && err "Must specify a file name for the --virtual-host flag (or use - for stdout)." 1  
-			[ $TYPE -eq 0 ] && VHOST_FILE=/dev/stdout || VHOST_FILE=$2
-			shift
+			if [ ! -z "$2" ]
+			then
+				[[ "${2:0:1}" == "-" ]] || VHOST_FILE="$2"
+				shift
+			fi			
 		;;
 
 		# Don't create a git repo
@@ -242,6 +226,21 @@ for n in $CHECK; do sh -c ${n} 2>/dev/null; [ $? -eq 127 ] && {
 IFS=" "
 
 
+# Also check for the config file, and come up with some defaults if not running
+# a globally installed copy (or just fail and say you should install it)
+if [ ! -f $CONF_FILE ]
+then
+	printf "$PROGRAM_NAME: ColdMVC hasn't been installed yet.  " 
+	printf "Please run 'make install' from ColdMVC's source directory.\n"
+	exit 
+fi 
+
+
+# Include the file and check that prefix exists
+source $CONF_FILE
+[ ! -d $PREFIX ] && err "ColdMVC didn't install correctly (couldn't find source directory $PREFIX)\n" 1
+
+
 # Handle verbosity
 [ $VERBOSE -eq 1 ] && MKDIR_FLAGS="-pv" || MKDIR_FLAGS="-p"
 [ $VERBOSE -eq 1 ] && CP_FLAGS="-v" || CP_FLAGS=""
@@ -288,58 +287,40 @@ EOF
 
 	# Set up a new CMVC instance
 	[ $VERBOSE -eq 1 ] && printf "\n* Create ColdMVC application folders...\n"
-	#[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/{app,assets,components,db,files,routes,log,setup,sql,std,views}
 	mkdir $MKDIR_FLAGS $DIR/{app,assets,components,db,files,routes,log,setup,sql,std,views}/
-
-	#[ $VERBOSE -eq 1 ] && echo mkdir -p $DIR/assets/{css,js}
 	mkdir $MKDIR_FLAGS $DIR/assets/{css,js}/
-
-	#[ $VERBOSE -eq 1 ] && echo mkdir $MKDIR_FLAGS $DIR/db/static
 	mkdir $MKDIR_FLAGS $DIR/db/static
-
-	#[ $VERBOSE -eq 1 ] && echo mkdir $MKDIR_FLAGS $DIR/std/custom
 	mkdir $MKDIR_FLAGS $DIR/std/custom
 
 
 	# Populate the new instance
 	[ $VERBOSE -eq 1 ] && printf "\n* Populating new ColdMVC instance...\n"
-	#[ $VERBOSE -eq 1 ] && echo cp $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.cfm} $DIR/
-	cp $CP_FLAGS $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.cfm} $DIR/
-
-	#[ $VERBOSE -eq 1 ] && echo cp $CP_FLAGS $SRC/share/data.cfm.example $DIR/std/
-	cp $CP_FLAGS $SRC/share/data.cfm.example $DIR/std/
-
-	#[ $VERBOSE -eq 1 ] && echo cp $CP_FLAGS $SRC/share/app-default.cfm $DIR/app/default.cfm
+	cp $CP_FLAGS $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.cfm,data.cfm.example} $DIR/
 	cp $CP_FLAGS $SRC/share/app-default.cfm $DIR/app/default.cfm
-
-	#[ $VERBOSE -eq 1 ] && echo cp $CP_FLAGS $SRC/share/views-default.cfm $DIR/views/default.cfm
 	cp $CP_FLAGS $SRC/share/views-default.cfm $DIR/views/default.cfm
-
-	#[ $VERBOSE -eq 1 ] && echo cp $CP_FLAGS $SRC/share/failure.cfm $DIR/std/
 	cp $CP_FLAGS $SRC/share/failure.cfm $DIR/std/
-
-	#[ $VERBOSE -eq 1 ] && echo cp $CP_FLAGS $SRC/share/{4xx,5xx,mime,html}-view.cfm $DIR/std/
 	cp $CP_FLAGS $SRC/share/{4xx,5xx,mime,html}-view.cfm $DIR/std/
-
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
+
+	# Set up Application redirects
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up redirects...\n"
-	for _d in app components db log middleware routes setup sql std views
+	for _d in app components db log routes setup sql std views
 	do 
 		[ $VERBOSE -eq 1 ] && echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 		cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
 	done
-
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
+
+	# Set up assets
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up assets...\n"
 	cp $CP_FLAGS $SRC/share/*.css $DIR/assets/
-
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	# Modify the data.cfm in the new directory to actually work
-	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.json...\n"
+	[ $VERBOSE -eq 1 ] && printf "\n* Modifying data.cfm...\n"
 	test -z `uname | grep 'Darwin'` && IS_MAC=0 || IS_MAC=1
 
 
@@ -364,14 +345,7 @@ EOF
 			s/__TITLE__/${TITLE}/
 		}" $DIR/data.cfm
 	fi
-
 	[ $VERBOSE -eq 1 ] && echo DONE!
-
-
-	#Add a changelog
-	#[ $VERBOSE -eq 1 ] && printf "\n* Generating a CHANGELOG file...\n"
-	#printf "`date +%F`\n\t- Created this project." > $DIR/CHANGELOG
-	#[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	#Create git repo 
@@ -414,7 +388,6 @@ then
 	\t\t<!-- #BEGIN:$NAME -->\n\t\t<Host name="${NAME}" appBase="webapps">\n\t\t\t<Context path="" docBase="${DIR}" />\n\t\t\t<Alias>${DEV_ALIAS}</Alias>\n\t\t</Host>\n\t\t<!-- #END:$NAME -->\n
 LUCEE_HOST
 	) #This is the end of variable declaration
-
 
 	#Create a new VirtualHost for Lucee
 	#sed -i "{ s|\(<!-- ADD NEW HOSTS HERE -->\)|\1\n${HOST_CONTENT}| }" $LUCEE_CONF
@@ -503,7 +476,6 @@ fi
 if [ $DO_GENVHOST -eq 1 ]
 then
 	# Get some configuration details
-	#APACHE_CONFIG="`httpd -t -D DUMP_RUN_CFG`" 
 	APACHE_DOCROOT="`httpd -t -D DUMP_RUN_CFG 2>/dev/null| grep 'DocumentRoot:' | awk '{ print $3 }' | sed 's/"//g' `" 
 
 	# Make sure the user specified a directory
@@ -514,7 +486,7 @@ then
 	# Name should probably not be turned off
 	#[ ! -z "$DOMAIN" ] || err "No name specified for vhost..." 1
 	[ ! -z "$NAME" ] || err "No name specified for vhost..." 1
-	DOMAIN=$NAME
+	[ ! -z "$DOMAIN" ] || err "No domain specified for virtual host..." 1
 
 	# Virtual host file 
 	{
