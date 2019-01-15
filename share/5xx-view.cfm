@@ -16,7 +16,9 @@
   --->
 <html>
 <head>
-<cfif #data.localOverride.4xx#>
+<cfif not isDefined( "data" )>
+ <link rel=stylesheet href="/assets/5xx-view.css" type=text/css>
+<cfelseif #data.localOverride.4xx#>
  <link rel=stylesheet href="/assets/5xx-view.css" type=text/css>
 <cfelse>
  <style type="text/css">

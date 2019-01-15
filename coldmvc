@@ -30,7 +30,9 @@
 
 # const 
 PROGRAM_NAME=`basename $0`
-CONF_FILE="/etc/coldmvc.conf"
+SYMNAME=coldmvc
+PROPNAME=ColdMVC
+CONF_FILE="/etc/${SYMNAME}.conf"
 
 # unconst
 DIR=
@@ -225,20 +227,19 @@ for n in $CHECK; do sh -c ${n} 2>/dev/null; [ $? -eq 127 ] && {
 	printf "Please install package '$n' using a package manager.\n" > /dev/stderr; } done
 IFS=" "
 
-
 # Also check for the config file, and come up with some defaults if not running
 # a globally installed copy (or just fail and say you should install it)
 if [ ! -f $CONF_FILE ]
 then
-	printf "$PROGRAM_NAME: ColdMVC hasn't been installed yet.  " 
-	printf "Please run 'make install' from ColdMVC's source directory.\n"
+	printf "$PROGRAM_NAME: $PROPNAME hasn't been installed yet.  " 
+	printf "Please run 'make install' from $PROPNAME's source directory.\n"
 	exit 
 fi 
 
 
 # Include the file and check that prefix exists
 source $CONF_FILE
-[ ! -d $PREFIX ] && err "ColdMVC didn't install correctly (couldn't find source directory $PREFIX)\n" 1
+[ ! -d $PREFIX ] && err "$PROPNAME didn't install correctly (couldn't find source directory $PREFIX)\n" 1
 
 
 # Handle verbosity
@@ -250,7 +251,7 @@ source $CONF_FILE
 # CREATE NEW CMVC INSTANCES
 if [ $CREATE -eq 1 ]
 then
-	# ColdMVC's source code will probably be at /etc/
+	# $PROPNAME's source code will probably be at /etc/
 	# When built, this variable will probably be here
 	
 	# Check that a directory has been specified
@@ -260,18 +261,21 @@ then
 	[ -z $NAME ] && NAME=`basename $DIR`
 
 	# Then default all other variables if they were not specified.
+	SRC=$PREFIX
+	SHAREDIR=$SRC/share/$SYMNAME
 	DATASOURCE=${DATASOURCE:-"(none)"}
 	TITLE=${TITLE:-"$NAME"}
 	DOMAIN=${DOMAIN:-"$NAME"}
 	DESCRIPTION=${DESCRIPTION:-""}
 
-	# Negotiate the better base directory
+	# Do smart things with the base directory
 	BASEDIR=${BASEDIR:-"/"}
 	[ ${#BASEDIR} -gt 1 ] && [ ${BASEDIR:0:1} != '/' ] && BASEDIR="/${BASEDIR}"
+	[ ${#BASEDIR} -gt 1 ] && [ ${BASEDIR:$(( ${#BASEDIR} - 1 )):1} != '/' ] && BASEDIR="${BASEDIR}/"
 
 	# It's a good time for a message
 	[ $VERBOSE -eq 1 ] && {
-		printf "Creating new ColdMVC instance with the following parameters.\n"
+		printf "Creating new $PROPNAME instance with the following parameters.\n"
 		#Uses Apache?  `test $NO_GIT -eq 1 && echo "No" || echo "Yes"`
 		cat <<EOF
 DIR         = $DIR
@@ -286,7 +290,7 @@ EOF
 	}
 
 	# Set up a new CMVC instance
-	[ $VERBOSE -eq 1 ] && printf "\n* Create ColdMVC application folders...\n"
+	[ $VERBOSE -eq 1 ] && printf "\n* Create $PROPNAME application folders...\n"
 	mkdir $MKDIR_FLAGS $DIR/{app,assets,components,db,files,routes,log,setup,sql,std,views}/
 	mkdir $MKDIR_FLAGS $DIR/assets/{css,js}/
 	mkdir $MKDIR_FLAGS $DIR/db/static
@@ -294,12 +298,12 @@ EOF
 
 
 	# Populate the new instance
-	[ $VERBOSE -eq 1 ] && printf "\n* Populating new ColdMVC instance...\n"
-	cp $CP_FLAGS $SRC/share/{Application.cfc,coldmvc.cfc,index.cfm,data.cfm,data.cfm.example} $DIR/
-	cp $CP_FLAGS $SRC/share/app-default.cfm $DIR/app/default.cfm
-	cp $CP_FLAGS $SRC/share/views-default.cfm $DIR/views/default.cfm
-	cp $CP_FLAGS $SRC/share/failure.cfm $DIR/std/
-	cp $CP_FLAGS $SRC/share/{4xx,5xx,mime,html}-view.cfm $DIR/std/
+	[ $VERBOSE -eq 1 ] && printf "\n* Populating new $PROPNAME instance...\n"
+	cp $CP_FLAGS $SHAREDIR/{Application.cfc,$SYMNAME.cfc,index.cfm,data.cfm,data.cfm.example} $DIR/
+	cp $CP_FLAGS $SHAREDIR/app-default.cfm $DIR/app/default.cfm
+	cp $CP_FLAGS $SHAREDIR/views-default.cfm $DIR/views/default.cfm
+	cp $CP_FLAGS $SHAREDIR/failure.cfm $DIR/std/
+	cp $CP_FLAGS $SHAREDIR/{4xx,5xx,mime,html}-view.cfm $DIR/std/
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
@@ -307,15 +311,15 @@ EOF
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up redirects...\n"
 	for _d in app components db log routes setup sql std views
 	do 
-		[ $VERBOSE -eq 1 ] && echo cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
-		cp $SRC/share/Application-Redirect.cfc $DIR/$_d/Application.cfc
+		[ $VERBOSE -eq 1 ] && echo cp $SHAREDIR/Application-Redirect.cfc $DIR/$_d/Application.cfc
+		cp $SHAREDIR/Application-Redirect.cfc $DIR/$_d/Application.cfc
 	done
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
 	# Set up assets
 	[ $VERBOSE -eq 1 ] && printf "\n* Setting up assets...\n"
-	cp $CP_FLAGS $SRC/share/*.css $DIR/assets/
+	cp $CP_FLAGS $SHAREDIR/*.css $DIR/assets/
 	[ $VERBOSE -eq 1 ] && echo DONE!
 
 
@@ -399,7 +403,7 @@ fi
 if [ $ACTIVATE -eq 1 ]
 then
 	#
-	[ $VERBOSE -eq 1 ] && printf "Checking for valid ColdMVC instance '$THIS_SITE'...\n" 
+	[ $VERBOSE -eq 1 ] && printf "Checking for valid $PROPNAME instance '$THIS_SITE'...\n" 
 
 	# Could be thrown after --create, so prefill
 	THIS_SITE="${THIS_SITE:-$DIR}"
@@ -414,7 +418,7 @@ then
 	test -d "$THIS_SITE" || err "Folder does not exist...\n" 1
 
 	# Check that it's an instance
-	test -d "$THIS_SITE/app" && test -d "$THIS_SITE/views" || err "Folder is not a ColdMVC instance...\n" 1
+	test -d "$THIS_SITE/app" && test -d "$THIS_SITE/views" || err "Folder is not a $PROPNAME instance...\n" 1
 		
 	# Check that the files we need to move exist
 	test -f $THIS_SITE/app/default.cfm || err "Default model file may have already been modified...\n" 1

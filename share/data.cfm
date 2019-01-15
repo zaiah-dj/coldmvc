@@ -18,13 +18,13 @@ manifest = {
 /*Turn on debugging, yes or no?*/
 ,"debug"  = 0  
 
-/*Description*/
+/*Set a description for this new application*/
 ,"description"  = "__DESCRIPTION__" 
 
-/*Author*/
+/*Set a primary author for SEO purposes*/
 ,"author"  = "__AUTHOR__" 
 
-/*Add some locations for local development*/
+/*Locations for alternate serving locations can go here*/
 ,"hosts"  = [ ]
 
 /*Select a datasource*/
@@ -36,7 +36,7 @@ manifest = {
 /*This is a symbolic name for the application*/
 ,"name"   = "__NAME__"
 
-/*Set the site title from here*/
+/*Set a global site title from here for SEO purposes*/
 ,"title"  = "__TITLE__"
 
 /*This is used to control how much logging to do where*/
@@ -56,58 +56,17 @@ manifest = {
 }
 
 /*----------------- CUSTOM  ---------------------------------*/
-/*Other things that can go in data, but to keep things easy
-to fix later, I'll seperate them from what should be there*/
-/*
-,"redirectForLogin" = "/motrpac/web/dspLogin.cfm?to=0"
-,"redirectHome" = "/motrpac/web/secure/index.cfm"
-,"ajaxEveryTime"  =  0
-,"neverExpire"   = -1
-	*/
+/*Add your custom variables here*/
 
 /*----------------- DATABASES -------------------------------*/
-/*Aliases for database tables, note you can choose between 
-production and development table names so that you don't hose
-real data*/
-,"data"   = {
-
-	"endurance"     = "frm_EETL"
- ,"resistance"    = "frm_RETL"
- ,"participants"  = "v_ADUSessionTickler"
-
- ,"notes"         = "ParticipantNotes"
- ,"checkin"       = "ac_mtr_checkinstatus_v2"
- ,"bloodpressure" = "ac_mtr_bloodpressure_v2"
-
- ,"serverlog"     = "ac_mtr_serverlog"
-
-
- ,"sia"           = "ac_mtr_session_interventionist_assignment"
-
- ,"sessiondappl"  = "ac_mtr_session_metadata"
- ,"sessiondpart"  = "ac_mtr_session_participants_selected"
- ,"sessiondtrk"   = "ac_mtr_session_participant_data_tracker"
- ,"sessiondstaff" = "ac_mtr_session_staff_selected"
- ,"staff"         = "ac_mtr_test_staff"
-
- ,"et"   = "equipmentTracking"
- ,"eteq" = "equipmentTrackingEquipment"
- ,"etex" = "equipmentTrackingExercises"
- ,"etin" = "equipmentTrackingInterventions"
- ,"etma" = "equipmentTrackingMachines"
- ,"etmn" = "equipmentTrackingManufacturers"
- ,"etmo" = "equipmentTrackingModels"
- ,"etst" = "equipmentTrackingSettings"
- ,"etvr" = "equipmentTrackingVersions"
-}
+/*Aliases for database tables can go here*/
+,"data"   = {}
 
 /*----------------- ROUTES ---------------------------------*/
 /*Here are the application's routes or endpoints.*/
 ,"routes" = {
 
-	/* --- APPLICATION ENDPOINTS ----------------------------------- */
-	/*The participant selection page as seen by the interventionists.*/
-	"default"= { model="default", view = [ "master/head", "default", "master/tail" ] }
+	"default"= { model="default", view = "default" }
 
  } /*end routes*/
 };

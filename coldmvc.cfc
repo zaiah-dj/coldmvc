@@ -147,7 +147,7 @@ coldmvc.cfc
 			
 	- Updated default application.cfc by turning it into a property.  The cfscript tags that were present in the document previously were causing Lucee to throw an exception.
 			
-	-	Also added the "base" key to data.json.   A few other keys should be added as well, but this one took priority. Without this key, index.cfm automatically throws a 404 not found error when looking for app and view files besides default.cfm.
+	-	Also added the "base" key to data.cfm.   A few other keys should be added as well, but this one took priority. Without this key, index.cfm automatically throws a 404 not found error when looking for app and view files besides default.cfm.
 
 	- Checkpoint commit.  coldmvc has a new function called 'jsonToQuery' which converts JSON to a query :)
 
@@ -345,7 +345,7 @@ component name = "ColdMVC" {
 		abort;
 	}
 		
-		//writeoutput( message ); 
+		writeoutput( message ); 
 		return true;	
 	}
 
@@ -777,6 +777,40 @@ component name = "ColdMVC" {
 		return tr;
 	}
 
+	//@title: make_index 
+	//@args :
+	//@end
+	//@body :
+	//	Generate an index
+	//@end
+	public function sendAsJson ( ) {
+		//the first thing should be an object, any extra keys ought to be something
+		//else
+
+		//struct goes here
+		a = {};
+
+		if ( !StructCount( arguments ) ) 
+			;
+		else if ( StructCount( arguments ) eq 1 ) {
+			//serialize
+			a = SerializeJSON( arguments );
+		}
+		else {
+			//serialize and start adding everything else
+			for ( k in arguments ) {
+				a[ k ] = arguments[ k ];
+			}	
+		}
+
+		//send back with application/json	
+		a = SerializeJSON( a );
+		pc = getpagecontext().getResponse();
+		pc.setContentType( "application/json" );
+		writeoutput( a );
+		abort;
+		//pc.setHeader( "Content-Length:
+	}
 
 
 	//@title: make_index 
@@ -886,7 +920,7 @@ component name = "ColdMVC" {
 						abort  = true,
 						errorMsg = "<br />" & 
 							"Views as structs are not yet supported.  " &  
-							"Please fix your data.json file." 
+							"Please fix your data.cfm file." 
 					);
 					abort;
 				}
@@ -951,10 +985,10 @@ component name = "ColdMVC" {
 					else if ( ev.type == "struct" )
 					{
 						//This is an exception for now...
-						logReport( "<br />Views as structs are not yet supported.  Please fix your data.json file." );
+						logReport( "<br />Views as structs are not yet supported.  Please fix your data.cfm file." );
 						render_page( 
 							status = 500,
-							errorMsg = "Views as structs are not yet supported.  Please fix your data.json file."
+							errorMsg = "Views as structs are not yet supported.  Please fix your data.cfm file."
 						);
 						abort;
 					}
@@ -1305,8 +1339,6 @@ component name = "ColdMVC" {
 		s = StructNew();
 		s.status = true;
 		s.message = "";
-
-		//Results are where things should go...
 		s.results = StructNew();
 
 		//Loop through each value in v
@@ -1430,7 +1462,7 @@ component name = "ColdMVC" {
 						}
 					} 
 
-					//Check expected limits ( you can even block stuff from a value in data.json )
+					//Check expected limits ( you can even block stuff from a value in data.cfm )
 					if ( structKeyExists( vk, "sizeLt" ) && !( file.results.oldfilesize lt vk.sizeLt ) ) {
 						FileDelete( file.results.fullpath );
 						return strerror( 'errFileSizeTooLarge', key, file.results.oldfilesize, vk.sizeLt );
@@ -1779,7 +1811,7 @@ component name = "ColdMVC" {
 			if ( !StructKeyExists( appdata, key  ) )
 			{
 				render_page( status = 500, abort = true, errorMsg =
-					"<h2>Struct key '"& key &"' not found in data.json!</h2>" );
+					"<h2>Struct key '"& key &"' not found in data.cfm!</h2>" );
 				abort;
 			}
 		}
