@@ -41,13 +41,21 @@ pkg:
 
 
 # testprojects - Generate projects that stress test Apache proxy and Lucee standalone installs
-testprojects: VH_TEST=testvh
-testprojects: SA_TEST=testsa
-testprojects: LUCEE_DIR=/opt/lucee/tomcat/webapps
-testprojects:
+test: VH_TEST=testvh
+test: SA_TEST=testsa
+test: LUCEE_DIR=/opt/lucee/tomcat/webapps
+test:
 	$(NAME) --create --basedir $(SA_TEST) --folder $(LUCEE_DIR)/$(SA_TEST) \
 		--name $(SA_TEST)
 	$(NAME) --create --folder /srv/http/$(VH_TEST) --name $(VH_TEST)
+
+
+# testre - Delete project folders and remake them for easy 
+reset: VH_TEST=testvh
+reset: SA_TEST=testsa
+reset: LUCEE_DIR=/opt/lucee/tomcat/webapps
+reset:
+	rm -rfv $(LUCEE_DIR)/$(SA_TEST) /srv/http/$(VH_TEST)
 
 
 # testinit - Make sure the dev system is setup to run some tests

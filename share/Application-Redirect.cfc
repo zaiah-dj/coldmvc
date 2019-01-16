@@ -21,8 +21,10 @@
 component {
 	function onRequest (string targetPage)  {
 		include "../data.cfm";
+writedump( manifest )
+
 		try {
-			include "index.cfm";
+			location( url=manifest.base, addtoken='no' ); 
 		} 
 		catch (any e) {
 			writedump(e);
