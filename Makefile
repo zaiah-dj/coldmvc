@@ -30,11 +30,33 @@ uninstall:
 	-rm -rf $(PREFIX)/share/$(NAME)/
 
 #if 0 
-# pkg - Create new packages for distribution
+# usermake - Create a modified Makefile for regular users
 pkgMakefile:
 	@sed '/^# /d' Makefile | cpp - | sed '/^# /d'
 
+
+# pkg - Create new packages for distribution
 pkg:
 	git archive master HEAD | tar czf - > /tmp/$(NAME).`date +%F`.`date +%H-%M-%S`.tar.gz
+
+
+# testprojects - Generate projects that stress test Apache proxy and Lucee standalone installs
+testprojects: VH_TEST=testvh
+testprojects: SA_TEST=testsa
+testprojects: LUCEE_DIR=/opt/lucee/tomcat/webapps
+testprojects:
+	$(NAME) --create --basedir $(SA_TEST) --folder $(LUCEE_DIR)/$(SA_TEST) \
+		--name $(SA_TEST)
+	$(NAME) --create --folder /srv/http/$(VH_TEST) --name $(VH_TEST)
+
+
+# testinit - Make sure the dev system is setup to run some tests
+testinit:
+	systemctl restart httpd
+	systemctl restart lucee
+	test -z "`grep 'testvh.local' /etc/hosts`" && \
+		printf "127.0.0.1\ttestvh.local\twww.testvh.local\n" >> /etc/hosts || \
+		printf '' >/dev/null
+
 
 #endif
