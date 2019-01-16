@@ -1,23 +1,27 @@
 <!---
+/* ---------------------------------------------- *
 app-default.cfm
+===============
 
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+------
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
-	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
+Copyright
+---------
+Copyright 2016-Present, "Tubular Modular"
+Original Author Date: Tue Jul 26 07:26:29 2016 -0400
 
-@summary
- 	Model file	
-@end
+Summary
+-------
+Example model file	
 
-@sum
-	a0c4ad8039c926b72977f80c8f5dca4c
-@end
-  --->
+TODO
+----
+Beef this up significantly.
+
+ * ---------------------------------------------- */
+ --->
 <cfscript>
 	model = {};
 	model.greeting = "Hello, there!";

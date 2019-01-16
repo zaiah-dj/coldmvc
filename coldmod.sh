@@ -3,31 +3,24 @@
 # coldmod.sh
 #
 # @author
-#		Antonio R. Collins II (ramar.collins@gmail.com)
-# @end
+#		Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 #
 # @copyright
-# 	Copyright 2016-Present, "Deep909, LLC"
+# 	Copyright 2016-Present, "Tubular Modular"
 # 	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-# @end
 # 
 # @summary
 # 	A way to create new "plugins"
-# @end
 #
 # @usage
 # 	
-# @end
 #
-# @body
-# @end
 # 
 # @todo
 #		- Be able to build from JSON
 # 	- Handle setup tasks and tooling ( like database connections and maintenance ) 
 # 	- Convert to Java or C++
 #		- Download "modules" via some web site somewhere and place them into this chain
-# @end
 # -------------------------------------------- #
 
 # Variable list

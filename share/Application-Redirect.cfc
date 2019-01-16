@@ -1,29 +1,30 @@
 <!---
-Application-Redirect.cfc
-
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
-
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
-	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
-
-@summary
-	A stub used to redirect requests to disallowed directories.
-@end
-  --->
+/* ---------------------------------------------- *
+ * Application-Redirect.cfc
+ * ========================
+ * 
+ * Author
+ * -----
+ * Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
+ * 
+ * Copyright
+ * ---------
+ * Copyright 2016-Present, "Tubular Modular"
+ * Original Author Date: Tue Jul 26 07:26:29 2016 -0400
+ * 
+ * Summary
+ * -------
+ * A stub used to redirect requests to disallowed directories.
+ *
+ * ---------------------------------------------- */
+ --->
 component {
-	function onRequest (string targetPage) 
-	{
-		j = DeserializeJSON( FileRead( "../data.json", "utf-8") );
-		location url = j.base;
-
+	function onRequest (string targetPage)  {
+		include "../data.cfm";
 		try {
 			include "index.cfm";
-		} catch (any e) {
-			//Handle exception
+		} 
+		catch (any e) {
 			writedump(e);
 			abort;
 			include "failure.cfm";

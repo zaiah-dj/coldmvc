@@ -1,18 +1,20 @@
 <!---
 Application-Redirect.cfc
 
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+------n
+	Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
+Copyright
+---------
+
+	Copyright 2016-Present, "Tubular Modular"
 	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
 
-@summary
+Summary
+-------
+
 	A stub used to redirect requests to disallowed directories.
-@end
   --->
 component {
 	function onRequest (string targetPage) 

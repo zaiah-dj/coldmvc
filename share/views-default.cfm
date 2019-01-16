@@ -1,29 +1,29 @@
 <!---
+/* ---------------------------------------------- *
 views-default.cfm
+=================
 
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+------
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
-	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
+Copyright
+---------
+Copyright 2016-Present, "Tubular Modular"
+Original Author Date: Tue Jul 26 07:26:29 2016 -0400
 
-@summary
- 	Default 'It Works!' style page for successful ColdMVC deployments. 
-@end
+Summary
+-------
+Default 'It Works!' style page for successful 
+ColdMVC deployments. 
 
-@sum
-	1a3e00cce2fc2fafa51ff672a82c5518
-@end
+ * ---------------------------------------------- */
   --->
 <html>
 
 <head>
 <style type=text/css>
-/*zero*/
-/* Borrowed and modified from http://meyerweb.com/eric/tools/css/reset/ */
+/*Borrowed and modified from http://meyerweb.com/eric/tools/css/reset/ */
 html, body, div, 
 h1, h2, h3, h4, h5, h6, 
 p, pre,
@@ -40,7 +40,6 @@ section, summary, time, mark, audio, video {
 	font: inherit;
 	vertical-align: baseline;
 }
-/* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
 	display: block;
@@ -62,14 +61,10 @@ table {
 	border-collapse: collapse;
 	border-spacing: 0;
 }
-
-
-/*global*/
 html {
 	font-family: Helvetica;
 	background-color: #ddd;
 }
-
 pre {
 	font-family: "Lucida Console", "Lucida Sans Typewriter", monaco, "Bitstream Vera Sans Mono", monospace;
 	width: 95%;
@@ -79,33 +74,24 @@ pre {
 	margin-top: 10;
 	padding: 5;
 }
-
-/*full-screen on most normal things*/
-.center
-{
+.center {
 	text-align: center;
 }
-
-.container
-{
+.container {
 	width: 59%;
 	background-color: #333;
 	color: white;
 	height: 100%;
 	float: left;
 }
-
-.other-container
-{
+.other-container {
 	position: relative;
 	width: 39%;
 	padding-top: 10;
 	margin-bottom: 10;
 	float: right;
 }
-
-.container-section
-{
+.container-section {
 	position: relative;
 	width: 95%;
 	padding-top: 10;
@@ -121,8 +107,7 @@ pre {
 	border-top: 5px solid #ccc;
 }
 
-.container p
-{
+.container p {
 	font-size: 1.5em;
 }
 
@@ -224,7 +209,6 @@ ul li {
 		<div class="container-section container-less container-light-line center">
 			<p>And welcome to ColdMVC, an MVC web framework for sites driven by CFML</p>
 		</div>
-
 		<a class="gets" href="##gets">More</a>
 	</div>
 

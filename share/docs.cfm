@@ -1,19 +1,23 @@
 <!---
+/* ---------------------------------------------- *
 docs.cfm
+========
 
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+------
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
-	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
+Copyright
+---------
+Copyright 2016-Present, "Tubular Modular"
+Original Author Date: Tue Jul 26 07:26:29 2016 -0400
 
-@summary
-	A documentation page that will probably just sit in the middle of the site.
-	Unsure if this should be dynamic or not...
-@end
+Summary
+-------
+An (incomplete) documentation page that should ship
+with new ColdMVC projects.
+
+ * ---------------------------------------------- */
   --->
   
 <html>

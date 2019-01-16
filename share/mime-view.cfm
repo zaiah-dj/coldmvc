@@ -1,17 +1,21 @@
 <!---
-Application.cfc
+/* ---------------------------------------------- *
+mime-view.cfm
+=============
 
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+------
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
-	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
+Copyright
+---------
+Copyright 2016-Present, "Tubular Modular"
+Original Author Date: Tue Jul 26 07:26:29 2016 -0400
 
-@summary
- 	Stub for views rendered with any mimetype besides HTML. 
-@end
+Summary
+-------
+Stub for views rendered with any mimetype besides HTML.
+
+ * ---------------------------------------------- */
 --->
 <cfcontent type="#content_type#"><cfoutput>#content#</cfoutput>

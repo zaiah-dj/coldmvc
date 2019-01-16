@@ -1,14 +1,18 @@
-<cfscript>
+<!---
 /* ------------------------------------------ *
  * data.cfm
  * --------
  * 
+ * Summary
+ * --------
  * CFML-based configuration file.
  * 
  * Application routes, datasources and more
  * are all updated here.
+ *
  * ------------------------------------------- */
-
+ --->
+<cfscript>
 /*This variable is used by ColdMVC to load all configuration data*/
 manifest = {
 /*This should probably not be modified by you*/

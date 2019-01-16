@@ -2,25 +2,30 @@
 /* --------------------------------------------------
 coldmvc.cfc
 -----------
-@author
-	Antonio R. Collins II (ramar.collins@gmail.com)
-@end
+Author
+=======
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
-@copyright
-	Copyright 2016-Present, "Deep909, LLC"
+Copyright
+---------
+
+	Copyright 2016-Present, "Tubular Modular"
 	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-@end
 
-@summary
+Summary
+-------
+
 	An MVC like structure for handling ColdFusion pages.
-@end
 
-@usage
+Usage
+-----
+
 	Drop this file into your application's web root and
 	call it using index.cfm or Application.cfc.
-@end
 
-@todo
+TODO
+----
+
 	- Add a 'test' directory for tests
 		In this folder have tests for functions
 		Have another folder for mock views and apps
@@ -80,10 +85,11 @@ coldmvc.cfc
 	- need a way to take things down for maintenance
 
 	- maybe add a way to enable tags? ( a tags folder )
-@end
 
 
-@changelog
+Changelog
+---------
+
 	2017/09/07 v0.2 milestone
 
 	2017/09/06
@@ -154,7 +160,6 @@ coldmvc.cfc
 
 	2016/09/01
 	- Changes on coldmvc will be marked in CHANGELOG.  Added new views and std/ directory for default templates.   Next step is deserializing JSON and creating the site in less steps.
-@end
 
  * -------------------------------------------------- */
 
@@ -373,10 +378,7 @@ component name = "ColdMVC" {
 
 	//@title: hashp
 	//@args :
-	//@end
-	//@body :
 	//	Hash function for text strings
-	//@end   
 	private Struct function hashp( p )
 	{
 		//Hash pass.username
@@ -401,10 +403,7 @@ component name = "ColdMVC" {
 
 	//@title: render_page
 	//@args :
-	//@end
-	//@body :
 	//	Hash function for text strings
-	//@end   
 	private function render_page ( 
 		Required String   errorMsg  ,  //Error message
 		/*Optional*/ String   errorAddl ,  //Additional error message
@@ -447,10 +446,7 @@ component name = "ColdMVC" {
 	
 	//@title: logReport 
 	//@args :
-	//@end
-	//@body :
 	//	Will silently log as ColdMVC executes
-	//@end   
 	private function logReport (Required String message) 
 	{
 		/*
@@ -474,10 +470,7 @@ component name = "ColdMVC" {
 
 	//@title: checkArrayOrString
 	//@args :
-	//@end
-	//@body :
 	//	Check if a value is an array or string
-	//@end   
 	private Struct function checkArrayOrString ( 
 		Required Struct sarg,  //The struct to check
 		Required String key    //The key within the struct to check against
@@ -502,10 +495,7 @@ component name = "ColdMVC" {
 
 	//@title: link 
 	//@args :
-	//@end
-	//@body :
 	//	Create links
-	//@end   
 	public string function link ( /*How do I specify var args???*/ )
 	{
 		//Define spot for link text
@@ -526,10 +516,7 @@ component name = "ColdMVC" {
 
 	//@title: crumbs 
 	//@args :
-	//@end
-	//@body :
 	//	Create "breadcrumb" link for really deep pages within a webapp. 
-	//@end   
 	public function crumbs () 
 	{
 		a = ListToArray(cgi.path_info, "/");
@@ -546,10 +533,7 @@ component name = "ColdMVC" {
 
 	//@title: upload_file 
 	//@args :
-	//@end
-	//@body :
 	//	Handles file uploads
-	//@end   
 	public Struct function upload_file (String formField, String mimetype) 
 	{
 		//Create a file name on the fly.
@@ -597,10 +581,7 @@ component name = "ColdMVC" {
 
 	//@title: _include 
 	//@args :
-	//@end
-	//@body :
 	//	A better includer
-	//@end   
 	public function _include (
 		Required String where,  Required String name ) 
 	{
@@ -630,10 +611,7 @@ component name = "ColdMVC" {
 
 	//@title: assimilate 
 	//@args :
-	//@end
-	//@body :
 	//	Add query content into model
-	//@end   
 	public Struct function assimilate (
 		Required Struct model, Required Query query) 
 	{
@@ -649,10 +627,7 @@ component name = "ColdMVC" {
 
 	//@title: isSetNull 
 	//@args :
-	//@end
-	//@body :
 	//	Check if a result set is composed of all nulls
-	//@end   
 	public Boolean function isSetNull (Query q) 
 	{
 		columnNames=ListToArray(q.columnList);
@@ -670,10 +645,7 @@ component name = "ColdMVC" {
 
 	//@title: dump_routes 
 	//@args :
-	//@end
-	//@body :
 	//	Dump all routes
-	//@end   
 	public String function dump_routes ( )
 	{
 		savecontent variable="cms.routeInfo" 
@@ -686,10 +658,7 @@ component name = "ColdMVC" {
 
 	//@title: check_file 
 	//@args :
-	//@end
-	//@body :
 	//	Check that a file exists?
-	//@end   
 	private Boolean function check_file (
 		Required String mapping, Required String file) 
 	{
@@ -699,13 +668,9 @@ component name = "ColdMVC" {
 
 	//@title: render_page
 	//@args :
-	//@end
-	//@body :
 	//	Get database column names
-	//@end   
 	//@note: 
 	//	This breaks in ColdFusion 9
-	//@end   
 	public String function get_column_names ( Required String table, /*Optional*/ String dbname )
 	{
 	/*
@@ -727,10 +692,7 @@ component name = "ColdMVC" {
 
 	//@title: setQueryField 
 	//@args :
-	//@end
-	//@body :
 	//	Add fields to a query very easily
-	//@end   
 	public function setQueryField (
 		Required Query query, Required String columnName, Required Any fillValue, String columnType )
 	{
@@ -746,10 +708,7 @@ component name = "ColdMVC" {
 
 	//@title: randstr 
 	//@args :
-	//@end
-	//@body :
 	//	A function to generate random letters.
-	//@end   
 	public String function randstr ( /*Optional*/ Numeric n )
 	{
 		// make an array instead, and join it...
@@ -763,10 +722,7 @@ component name = "ColdMVC" {
 
 	//@title: randnum
 	//@args :
-	//@end
-	//@body :
 	//	Generate random numbers
-	//@end   
 	public String function randnum ( /*Optional*/ Numeric n ) 
 	{
 		// make an array instead, and join it...
@@ -779,10 +735,7 @@ component name = "ColdMVC" {
 
 	//@title: make_index 
 	//@args :
-	//@end
-	//@body :
 	//	Generate an index
-	//@end
 	public function sendAsJson ( ) {
 		//the first thing should be an object, any extra keys ought to be something
 		//else
@@ -815,10 +768,7 @@ component name = "ColdMVC" {
 
 	//@title: make_index 
 	//@args :
-	//@end
-	//@body :
 	//	Generate an index
-	//@end   
 	public function make_index (ColdMVC ColdMVCInstance) 
 	{
 		//Use global scope for now.  This will be fixed later on.
@@ -1044,10 +994,7 @@ component name = "ColdMVC" {
 
 	//@title: dynquery 
 	//@args :
-	//@end
-	//@body :
 	//	Run a query using file path or text, returning the query via a variable
-	//@end   
 	public Struct function dynquery ( 
 		Optional queryPath,                     //Path to file containing SQL code
 		Optional queryText,                     //Send a query via text
@@ -1112,10 +1059,7 @@ component name = "ColdMVC" {
 	//@args :
 	//	Struct Item
 	//	String list 
-	//@end
-	//@body :
 	//	Check in structs for elements
-	//@end   
 	public Boolean function check_deep_key (Struct Item, String list) {
 		thisMember=Item;
 		nextMember=Item;
@@ -1134,10 +1078,7 @@ component name = "ColdMVC" {
 
 	//@title: wrapError 
 	//@args :
-	//@end
-	//@body :
 	//	Wrap error messages
-	//@end   
 	private query function wrapError(e) {
 		err = e.TagContext[1];
 		structInsert(myRes, 0, "status");
@@ -1149,10 +1090,7 @@ component name = "ColdMVC" {
 
 	//@title: resourceIndex 
 	//@args :
-	//@end
-	//@body :
 	//	Find the index of a resource if it exists.  Return 0 if it does not.*/
-	//@end   
 	private String function resourceIndex (String name, Struct ResourceList) 
 	{
 		//Define a base here
@@ -1214,10 +1152,7 @@ component name = "ColdMVC" {
 
 	//@title: login 
 	//@args :
-	//@end
-	//@body :
 	//	Handle basic login
-	//@end   
 	public function login ( )
 	{
 		//Zero cookies...
@@ -1236,10 +1171,7 @@ component name = "ColdMVC" {
 	//@args :
 	//	String qf = 
 	//	Boolean qf = 
-	//@end
-	//@body :
 	//	Hash function for text strings.  Function returns a query.  NULL if nothing...
-	//@end   
 	public function execQuery (String qf, Boolean dump) 
 	{
 		/*Check for the existence of the file we're asking for*/
@@ -1483,10 +1415,7 @@ component name = "ColdMVC" {
 	//@title: render_page
 	//@args :
 	//	v = ...
-	//@end
-	//@body :
 	//	Add to database without anything complex
-	//@end   
 	function _insert ( v )
 	{
 		//Define stuff
@@ -1762,10 +1691,7 @@ component name = "ColdMVC" {
 	//@title: init
 	//@args :
 	//	Struct Appscope = ...
-	//@end
-	//@body :
 	//	Initialize ColdMVC
-	//@end   
 	public ColdMVC function init (Struct appscope) 
 	{
 		//Add pre and post

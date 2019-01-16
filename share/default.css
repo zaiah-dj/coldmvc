@@ -1,5 +1,23 @@
-/*zero*/
-/* Borrowed and modified from http://meyerweb.com/eric/tools/css/reset/ */
+/* ---------------------------------------------- *
+default.css
+===========
+
+Author
+------
+Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
+
+Copyright
+---------
+Copyright 2016-Present, "Tubular Modular"
+Original Author Date: Tue Jul 26 07:26:29 2016 -0400
+
+Summary
+-------
+Default stylesheet for new ColdMVC apps.  Integrates
+Eric Meyer's CSS Reset code courtesy of this page:
+http://meyerweb.com/eric/tools/css/reset/
+
+ * ---------------------------------------------- */
 html, body, div, 
 h1, h2, h3, h4, h5, h6, 
 p, pre,

@@ -3,10 +3,10 @@
 # coldapi.sh
 #
 # # author
-#	Antonio R. Collins II (ramar.collins@gmail.com)
+#	Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 #
 # # copyright
-#	Copyright 2016-Present, "Deep909, LLC"
+#	Copyright 2016-Present, "Tubular Modular"
 #
 #	Tue Jul 26 07:26:29 2016 -0400
 # 

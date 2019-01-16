@@ -7,13 +7,11 @@
 # administration interface.
 #
 # @author
-# 	Antonio R. Collins II (ramar.collins@gmail.com)
-# @end
+# 	Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 # 
 # @copyright
-# 	Copyright 2016-Present, "Deep909, LLC"
+# 	Copyright 2016-Present, "Tubular Modular"
 # 	Original Author Date: Tue Jul 26 07:26:29 2016 -0400
-# @end
 #
 # Usage
 # ./coldmvc-test.sh 
