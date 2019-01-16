@@ -91,6 +91,42 @@ USAGES
 }
 
 
+# Determine whether an argument is a flag or not
+detFlag() {
+	if [ -z "$1" ]
+	then
+		echo -1 
+	else
+		# arg is a single, lonely dash
+		if [ ${#1} -eq 1 ] && [ $1 == '-' ] 
+		then
+			echo 0
+
+		# arg is a short arg flag 
+		elif [ ${1:0:1} == '-' ] && [[ ${1:1:1} =~ [a-z] ]]
+		then
+			echo -1 
+
+		# arg is a long arg flag 
+		elif [ ${1:0:1} == '-' ] && [ ${1:1:1} == '-' ]
+		then
+			echo -1 
+
+		# arg is an arg
+		else
+			echo 1
+
+		fi
+	fi
+}
+# Some tests
+#detFlag "boss"
+#detFlag "-a"
+#detFlag "-"
+#detFlag "--achoo"
+#exit
+
+
 # Catch blank arguments
 [ $# -eq 0 ] && usage 0 
 
@@ -104,15 +140,13 @@ do
 			CREATE=1
 		;;
 
+		# Turn off the 'default' that ships
 		--activate)
-			# Turn off the 'default' that ships
 			ACTIVATE=1
-			# Check...
-			if [ ! -z "$2" ]
-			then
-				[[ "${2:0:1}" == "-" ]] || THIS_SITE="$2"
-				shift
-			fi	
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
+			shift
+			THIS_SITE="$1"
 		;;
 
 		# Generate server confiuguration files for an Apache server 
@@ -132,24 +166,18 @@ do
 
 		# Enable the capacity to serve SES URLs via server configuration
 		-e|--ses|--search-engine-safe)
-			DO_SES=1
+			DO_SES=1; CODE=`detFlag "$2"`;
+			test $CODE -eq -1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
+			test $CODE -eq 1 && SES_FILE="$2" || SES_FILE=/dev/stdout
 			shift
-			# Check...
-			if [ ! -z "$2" ]
-			then
-				[[ "${2:0:1}" == "-" ]] || SES_FILE="$2"
-				shift
-			fi	
 		;;
 
 		# Generate a virtual host file for a particular server configuration
 		-i|--virtual-host)
-			DO_GENVHOST=1
-			if [ ! -z "$2" ]
-			then
-				[[ "${2:0:1}" == "-" ]] || VHOST_FILE="$2"
-				shift
-			fi			
+			DO_GENVHOST=1; CODE=`detFlag "$2"`;
+			test $CODE -eq -1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
+			test $CODE -eq 1 && VHOST_FILE="$2" || VHOST_FILE=/dev/stdout
+			shift
 		;;
 
 		# Don't create a git repo
@@ -165,12 +193,16 @@ do
 		# Parameters 
 		-f|--at|--folder)
 			# Create this directory
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			DIR="$1"
 		;;
 
 		# Use a different base directory
 		-b|--basedir)
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			BASEDIR="$1"
 		;;
@@ -178,24 +210,32 @@ do
 		# ...
 		-n|--name)
 			# Another parameter in data.json
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			NAME="$1"	
 		;;
 
 		# Define the domain names that will be used with a site
 		-m|--domain)
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			DOMAIN="$1"	
 		;;
 
 		# Goes in the README
 		-d|--description)
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			DESCRIPTION="$1"	
 		;;
 
 		# Specify a datasource
 		-s|--datasource)
+			CODE=`detFlag "$2"`;
+			test $CODE -lt 1 && err "$1 needs an argument, got '${2:-(nil)}'. Exiting..." 1 
 			shift
 			DATASOURCE="$1"	
 		;;
@@ -217,7 +257,6 @@ do
 	esac
 	shift
 done
-
 
 # Check for dependencies 
 CHECK="sed|xxd -h|git -h|md5sum -h|diff"
@@ -519,7 +558,7 @@ cat <<EOF
 	DirectoryIndex index.cfm index.html
 </VirtualHost>
 EOF
-	} > /dev/stdout 
+	} > $VHOST_FILE
 fi
 
 #cp $SRC/share/apache_htaccess $DIR/.htaccess
