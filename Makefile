@@ -5,7 +5,7 @@ MANDIR = ${PREFIX}/share/man
 BINDIR = $(PREFIX)/bin
 CONFIG = /etc
 WILDCARD=*
-NAME=coldmvc
+NAME=myst
 
 
 # list - List all the targets and what they do
