@@ -1,10 +1,10 @@
 #!/bin/bash -
 # -------------------------------------------- #
-# coldmvc.sh
+# myst.sh
 #
 # Summary
 # -------
-# An administration interface for ColdMVC sites.
+# An administration interface for Myst sites.
 #
 # Author
 # ------
@@ -30,8 +30,8 @@
 
 # const 
 PROGRAM_NAME=`basename $0`
-SYMNAME=coldmvc
-PROPNAME=ColdMVC
+SYMNAME=myst
+PROPNAME=Myst
 CONF_FILE="/etc/${SYMNAME}.conf"
 
 # unconst

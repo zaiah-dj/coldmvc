@@ -16,18 +16,18 @@ list:
 # install - Install the ColdMVC package on a new system
 install:
 	-test -d $(PREFIX) || mkdir -p $(PREFIX)/{share,share/man,bin}/
-	-mkdir -p $(PREFIX)/share/$(NAME)/
-	-cp ./$(NAME) $(PREFIX)/bin/$(NAME)
-	-cp -r ./share/$(WILDCARD) $(PREFIX)/share/$(NAME)/
-	-cp ./$(NAME).cfc $(PREFIX)/share/$(NAME)/
-	-cp ./etc/$(NAME).conf $(CONFIG)/
+	-mkdir -pv $(PREFIX)/share/$(NAME)/
+	-cp -v ./$(NAME) $(PREFIX)/bin/$(NAME)
+	-cp -rv ./share/$(WILDCARD) $(PREFIX)/share/$(NAME)/
+	-cp -v ./$(NAME).cfc $(PREFIX)/share/$(NAME)/
+	-cp -v ./etc/$(NAME).conf $(CONFIG)/
 	-sed -i 's;__PREFIX__;$(PREFIX);' $(CONFIG)/$(NAME).conf 
 
 # uninstall - Uninstall the ColdMVC package on a new system
 uninstall:
-	-rm -f $(PREFIX)/bin/$(NAME)
-	-rm -f $(CONFIG)/$(NAME).conf
-	-rm -rf $(PREFIX)/share/$(NAME)/
+	-rm -fv $(PREFIX)/bin/$(NAME)
+	-rm -fv $(CONFIG)/$(NAME).conf
+	-rm -rfv $(PREFIX)/share/$(NAME)/
 
 #if 0 
 # usermake - Create a modified Makefile for regular users
