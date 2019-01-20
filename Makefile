@@ -13,17 +13,17 @@ list:
 	@printf 'Available options are:\n'
 	@sed -n '/^#/ { s/# //; 1d; p; }' Makefile | awk -F '-' '{ printf "  %-20s - %s\n", $$1, $$2 }'
 
-# install - Install the ColdMVC package on a new system
+# install - Install the myst package on a new system
 install:
 	-test -d $(PREFIX) || mkdir -p $(PREFIX)/{share,share/man,bin}/
 	-mkdir -pv $(PREFIX)/share/$(NAME)/
-	-cp -v ./$(NAME) $(PREFIX)/bin/$(NAME)
+	-cp -v ./bin/$(WIDLCARD) $(PREFIX)/bin/
 	-cp -rv ./share/$(WILDCARD) $(PREFIX)/share/$(NAME)/
 	-cp -v ./$(NAME).cfc $(PREFIX)/share/$(NAME)/
 	-cp -v ./etc/$(NAME).conf $(CONFIG)/
 	-sed -i 's;__PREFIX__;$(PREFIX);' $(CONFIG)/$(NAME).conf 
 
-# uninstall - Uninstall the ColdMVC package on a new system
+# uninstall - Uninstall the myst package on a new system
 uninstall:
 	-rm -fv $(PREFIX)/bin/$(NAME)
 	-rm -fv $(CONFIG)/$(NAME).conf

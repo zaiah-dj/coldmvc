@@ -1,10 +1,10 @@
 <cfscript>
 /* --------------------------------------------------
-myst.cfc
-========
+coldmvc.cfc
+===========
 
 Author
-------
+-----
 Antonio R. Collins II (rc@tubularmodular.com, ramar.collins@gmail.com)
 
 Copyright
@@ -14,7 +14,7 @@ Original Author Date: Tue Jul 26 07:26:29 2016 -0400
 
 Summary
 -------
-An MVC like structure for handling CFML pages.
+An MVC like structure for handling ColdFusion pages.
 
 Usage
 -----
@@ -23,7 +23,6 @@ call it using index.cfm or Application.cfc.
 
 TODO
 ----
-
 	- Add a 'test' directory for tests
 		In this folder have tests for functions
 		Have another folder for mock views and apps
@@ -164,10 +163,7 @@ Changelog
 
 
 /*Define our component here*/
-component name="Myst" accessors=true {
-	//TODO: I don't think I need this
-	this.name = "Myst";
-
+component name = "ColdMVC" {
 	/*C-style array to index error messages.  Cleans up a lot*/
 	ERR_KEY_NOT_FOUND = 1;
 
@@ -211,6 +207,7 @@ component name="Myst" accessors=true {
 		"/templates"  = this.root_dir & "templates/",
 		"/views"      = this.root_dir & "views/"
 	};
+
 
 	//Courtesy of https://httpstatuses.com/	
 	this.httpHeaders = {
@@ -282,12 +279,9 @@ component name="Myst" accessors=true {
 		,"510" = "Not Extended"
 		,"511" = "Network Authentication Required"
 		,"599" = "Network Connect Timeout Error"
-	};
+	}
 
-
-	//<<DOC
 	//List of mimetypes for file processing
-	//DOC
 	this.mimes = {
 		 "text/html" = "html", "html" = "text/html"
 		,"text/html" = "htm", "htm" = "text/html"
@@ -472,6 +466,7 @@ component name="Myst" accessors=true {
 		};	
 	}
 
+
 	//This one includes pages in paths
 	private function pageHandler ( 
 		Required content
@@ -552,44 +547,49 @@ component name="Myst" accessors=true {
 	}
 
 
+
+
 	//@title: render_page
 	//@args :
 	//	Hash function for text strings
 	private function render_page ( 
 		String   errorMsg  ,  //Error message
-		String   errorAddl ,  //Additional error message
-		         stackTrace,  //Include a stacktrace
+		/*Optional*/ String   errorAddl ,  //Additional error message
+		/*Optional*/ stackTrace,  //Include a stacktrace
 
 
 		Numeric status, Struct errors, content, Boolean abort
 	 )
-
 	{
+		//Define some locally scoped variables 
 		var err = {};
 		var a = arguments;
 		var b = 0;
 		var page;
 
-		//TODO: Why would this happen?
+		//Why would this happen?
 		if ( !isDefined( "appdata" ) )
 			b = false;
 		else {
 			b = check_deep_key( appdata, "routes", rname, "content-type" );
 		}
 
-		//Define page from here...
+		//These templates are loaded to control output.
 		page = "std/" & ((b) ? "mime" : "html") & "-view.cfm";
 
-		//This can be content-less
+//writedump( arguments );
+		//this can be content-less
 		if ( !arguments.status || arguments.status == 200 )
-			contentHandler( mime="text/html", content=arguments.content ); 	
+//			contentHandler( mime="text/html", content=arguments.content ); 	
+abort;
 
-		else if (arguments.status > 399 && !StructIsEmpty( arguments.errors )) { 
+		else if ( arguments.status > 399 && !StructIsEmpty( arguments.errors ) ) { 
 //writedump( arguments ); 
 			//choose between page and content writer here
 			if ( 1 ) {
 				errorHandler( mime="text/html", status=arguments.status,
 					content='something awful', errors=arguments.errors );
+abort;
 			}
 			else {
 				0;
@@ -658,7 +658,7 @@ component name="Myst" accessors=true {
 			return { status = false, type = false, value = {} };
 
 		//Get the type name
-		typename = getMetadata( sarg[key] ).getName(); 
+		var typename = getMetadata( sarg[key] ).getName(); 
 
 		//Check if the view is a string, an array or an object (except if it's neither) 
 		if ( Find( "String", typename ) ) 
@@ -696,10 +696,10 @@ component name="Myst" accessors=true {
 	//	Create "breadcrumb" link for really deep pages within a webapp. 
 	public function crumbs () 
 	{
-		a = ListToArray(cgi.path_info, "/");
+		var a = ListToArray(cgi.path_info, "/");
 		writedump (a);
 		/*Retrieve, list and something else needs breadcrumbs*/
-		for (i = ArrayLen(a); i>1; i--) 
+		for (var i = ArrayLen(a); i>1; i--) 
 		{
 			/*If it's a retrieve page, have it jump back to the category*/
 			writedump(a[i]);
@@ -714,13 +714,13 @@ component name="Myst" accessors=true {
 	public Struct function upload_file (String formField, String mimetype) 
 	{
 		//Create a file name on the fly.
-		fp = this.constantmap["/files"]; 
+		var fp = this.constantmap["/files"]; 
 		fp = ToString(Left(fp, Len(fp) - 1)); 
 		
 		//Upload it.
 		try 
 		{	
-			a = FileUpload(
+			var a = FileUpload(
 				fp,           /*destination*/
 				formField,    /*Element from form to write*/
 				mimetype,     /*No mimetype limit*/
@@ -755,7 +755,11 @@ component name="Myst" accessors=true {
 	}
 
 
-	private function _include (Required String where, Required String name) {
+
+	//@title: _include 
+	//@args :
+	//	A better includer
+	private function _include ( Required String where, Required String name ) {
 		//Define some variables important to this function
 		var match = false;
 		var ref;
@@ -794,7 +798,7 @@ component name="Myst" accessors=true {
 
 			return {
 				status = false
-			 ,message = "#this.name# caught a '#e.type#' exception."
+			 ,message = "ColdMVC caught a '#e.type#' exception."
 			 ,errors = e
 			 ,ref = ref 
 			}
@@ -807,6 +811,8 @@ component name="Myst" accessors=true {
 		 ,ref = ref 
 		}
 	}
+
+
 
 	//@title: assimilate 
 	//@args :
@@ -846,10 +852,17 @@ component name="Myst" accessors=true {
 	//@args :
 	//	Dump all routes
 	public String function dump_routes ( ) {
-		savecontent variable="cms.routeInfo" { 
+		savecontent variable="cms.routeInfo" {
 			_include ( "std", "dump-view" ); 
 		}
 		return cms.routeInfo;
+	}
+
+
+
+	private function dprint( v ) {
+		writedump( v );
+		abort;
 	}
 
 
@@ -930,12 +943,15 @@ component name="Myst" accessors=true {
 		return tr;
 	}
 
-	//@title: sendAsJson 
+	//@title: make_index 
 	//@args :
 	//	Generate an index
 	public function sendAsJson ( ) {
-		//TODO: what the hell is this?
-		var a = {};
+		//the first thing should be an object, any extra keys ought to be something
+		//else
+
+		//struct goes here
+		a = {};
 
 		if ( !StructCount( arguments ) ) 
 			;
@@ -950,28 +966,27 @@ component name="Myst" accessors=true {
 			}	
 		}
 
-		//TODO: Use contentHandler(...) to send back with application/json	
+		//send back with application/json	
 		a = SerializeJSON( a );
 		pc = getpagecontext().getResponse();
 		pc.setContentType( "application/json" );
 		writeoutput( a );
 		abort;
+		//pc.setHeader( "Content-Length:
 	}
 
 
 	//@title: make_index 
 	//@args :
 	//	Generate an index
-	public function make_index (Myst MystInstance) {
-		//Define some local things
+	public function make_index (ColdMVC ColdMVCInstance) {
+		//Use global scope for now.  This will be fixed later on.
+		variables.coldmvc = ColdMVCInstance;
+		variables.data    = ColdMVCInstance.app;
+		//variables.db      = ColdMVCInstance.app.data;
 		var oScope;
 		var nScope;
 
-		//TODO: Change these from global scope when full object conversion happens.
-		variables.coldmvc = MystInstance;
-		variables.myst    = MystInstance;
-		variables.data    = MystInstance.app;
-		//variables.db      = MystInstance.app.data;
 		
 		//Find the right resource.
 		try {
@@ -1264,11 +1279,11 @@ component name="Myst" accessors=true {
 	//	String list 
 	//	Check in structs for elements
 	public Boolean function check_deep_key (Struct Item, String list) {
-		thisMember=Item;
-		nextMember=Item;
+		var thisMember=Item;
+		var nextMember=Item;
 
 		//Loop through each string in the argument list. 
-		for (i=2; i <=	ArrayLen(Arguments); i++) {
+		for (var i=2; i <= ArrayLen(Arguments); i++) {
 			//Check if the struct is a struct and if it contains a matching key.
 			if (!isStruct(thisMember) || !StructKeyExists(thisMember, Arguments[i]))
 				return 0;
@@ -1294,53 +1309,50 @@ component name="Myst" accessors=true {
 	//@title: resourceIndex 
 	//@args :
 	//	Find the index of a resource if it exists.  Return 0 if it does not.*/
-	private String function resourceIndex (String name, Struct ResourceList) 
+	private String function resourceIndex (String name, Struct ResList) 
 	{
 		//Define a base here
 		base = "";
 
-		//Create an array of the current routes.
-		if ( !structKeyExists(ResourceList, "routes") )
-			return "default";
-
-		//Handle no routes
-		if ( StructIsEmpty(ResourceList.routes) )
+		//Create an array of the current routes.  Request '{app,views}/default.cfm'
+		//if routes are either undefined or empty
+		if ( !structKeyExists(ResList, "routes") || StructIsEmpty(ResList.routes) )
 			return "default";
 
 		//If there is a base -- ...
-		if ( StructKeyExists( ResourceList, "base" ) )
-		{
-			if ( Len( ResourceList.base ) > 1 )
-				base = ResourceList.base;	
-			else if ( Len(ResourceList.base) == 1 && ResourceList.base == "/" )
+		if ( StructKeyExists( ResList, "base" ) ) {
+			if ( Len( ResList.base ) > 1 )
+				base = ResList.base;	
+			else if ( Len(ResList.base) == 1 && ResList.base == "/" )
 				base = "/";
 			else {
-				base = ResourceList.base;	
+				base = ResList.base;	
 			}
 		}
 
 		//Check for resources in GET or the CGI.stringpath 
-		if ( StructKeyExists(ResourceList, "handler") && CompareNoCase(ResourceList.handler, "get") == 0 )
-		{
+		if ( StructKeyExists(ResList, "handler") && !CompareNoCase(ResList.handler, "get") ) {
 			if (isDefined("url") and isDefined("url.action"))
 				name = url.action;
 			else {
-				if (StructKeyExists(ResourceList, "base"))
+				if (StructKeyExists(ResList, "base")) {
 					name = Replace(name, base, "");
+				}
 			}
 		}
 		else {
 			//Cut out only routes that are relevant to the current application.
-			if (StructKeyExists(ResourceList, "base"))
+			if (StructKeyExists(ResList, "base")) {
 				name = Replace(name, base, "");
+			}
 		}
 
-		//Handle the default route if ResourceList is not based off of URL
-		if (!StructKeyExists(ResourceList, "handler") && name == "index.cfm")
+		//Handle the default route if ResList is not based off of URL
+		if (!StructKeyExists(ResList, "handler") && name == "index.cfm")
 			return "default";
 
 		//If you made it this far, search for the requested endpoint
-		for (x in ResourceList.routes) 
+		for (x in ResList.routes) 
 		{
 			if (name == x) 
 				return x;
@@ -1353,13 +1365,30 @@ component name="Myst" accessors=true {
 		return ToString(0);
 	}
 
+	//@title: login 
+	//@args :
+	//	Handle basic login
+	public function login ( )
+	{
+		//Zero cookies...
+		getPageContext().getResponse().addHeader( 
+			"Set-Cookie", "#data.cookie#=0; path=/; " &
+			"domain=#listFirst(CGI.HTTP_HOST, ':' )#;HTTPOnly"); 
+
+		//Lock and clear the sessionObject
+		lock scope='session' timeout=10 {	
+			;//session.sessionObj = createObject( "component", "model.beans	
+		}
+	}
+
 
 	//@title: execQuery 
 	//@args :
 	//	String qf = 
 	//	Boolean qf = 
 	//	Hash function for text strings.  Function returns a query.  NULL if nothing...
-	public function execQuery (String qf, Boolean dump) {
+	public function execQuery (String qf, Boolean dump) 
+	{
 		/*Check for the existence of the file we're asking for*/
 		var template = qf & ".cfm";
 
@@ -1454,7 +1483,7 @@ component name="Myst" accessors=true {
 
 	//Check a struct for certain values by comparison against another struct
 	public function cmValidate ( cStruct, vStruct ) {
-		s = StructNew();
+		var s = StructNew();
 		s.status = true;
 		s.message = "";
 		s.results = StructNew();
@@ -1598,7 +1627,7 @@ component name="Myst" accessors=true {
 	}
 
 
-	//@title: render_page
+	//@title: _insert 
 	//@args :
 	//	v = ...
 	//	Add to database without anything complex
@@ -1878,8 +1907,7 @@ component name="Myst" accessors=true {
 	//@args :
 	//	Struct Appscope = ...
 	//	Initialize ColdMVC
-	public Myst function init (Struct appscope) 
-	{
+	public ColdMVC function init (Struct appscope) {
 		//Add pre and post
 		if (StructKeyExists(appscope, "post"))
 			this.post = appscope.post;
@@ -1906,7 +1934,7 @@ component name="Myst" accessors=true {
 
 
 		//Check that JSON manifest contains everything necessary.
-		keys = { 
+		var keys = { 
 			_required = [
 				 "base" 
 				,"routes"    ],
@@ -1917,7 +1945,7 @@ component name="Myst" accessors=true {
 			]
 		};
 
-		for ( key in keys._required )
+		for ( var key in keys._required )
 		{
 			rname = "";
 			if ( !StructKeyExists( appdata, key  ) )
@@ -1928,10 +1956,11 @@ component name="Myst" accessors=true {
 			}
 		}
 
-		if ( StructKeyExists( appdata, "settings" ) ) 
-			for ( key in keys._optional )
+		if ( StructKeyExists( appdata, "settings" ) ) {
+			for ( var key in keys._optional ) {
 				this[key] = (StructKeyExists(appdata.settings, key)) ? appdata.settings[ key ] : false;
-
+			}
+		}
 		this.app = appdata;	
 		return this;
 	}
