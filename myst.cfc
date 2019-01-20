@@ -166,7 +166,7 @@ Changelog
 
 
 /*Define our component here*/
-component name = "ColdMVC" {
+component name="Myst" accessors=true {
 	/*C-style array to index error messages.  Cleans up a lot*/
 	ERR_KEY_NOT_FOUND = 1;
 
@@ -769,13 +769,13 @@ component name = "ColdMVC" {
 	//@title: make_index 
 	//@args :
 	//	Generate an index
-	public function make_index (ColdMVC ColdMVCInstance) 
+	public function make_index (Myst MystInstance) 
 	{
 		//Use global scope for now.  This will be fixed later on.
-		variables.coldmvc = ColdMVCInstance;
+		variables.coldmvc = MystInstance;
 		variables.model   = StructNew();
-		variables.data    = ColdMVCInstance.app;
-		variables.db      = ColdMVCInstance.app.data;
+		variables.data    = MystInstance.app;
+		variables.db      = MystInstance.app.data;
 
 
 		//Find the right resource.
@@ -1692,7 +1692,7 @@ component name = "ColdMVC" {
 	//@args :
 	//	Struct Appscope = ...
 	//	Initialize ColdMVC
-	public ColdMVC function init (Struct appscope) 
+	public Myst function init (Struct appscope) 
 	{
 		//Add pre and post
 		if (StructKeyExists(appscope, "post"))
