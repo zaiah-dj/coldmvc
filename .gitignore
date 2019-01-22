@@ -7,3 +7,5 @@ vendor/
 !img/*.png
 datasources.todo
 TODO
+myst.todo
+myst_.cfc

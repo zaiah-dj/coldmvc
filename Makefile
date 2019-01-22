@@ -17,17 +17,19 @@ list:
 install:
 	-test -d $(PREFIX) || mkdir -p $(PREFIX)/{share,share/man,bin}/
 	-mkdir -pv $(PREFIX)/share/$(NAME)/
-	-cp -v ./bin/$(WIDLCARD) $(PREFIX)/bin/
-	-cp -rv ./share/$(WILDCARD) $(PREFIX)/share/$(NAME)/
-	-cp -v ./$(NAME).cfc $(PREFIX)/share/$(NAME)/
-	-cp -v ./etc/$(NAME).conf $(CONFIG)/
+	-cp -r ./bin/$(WILDCARD) $(PREFIX)/bin/
+	-cp -r ./share/$(WILDCARD) $(PREFIX)/share/$(NAME)/
+	-cp ./$(NAME).cfc $(PREFIX)/share/$(NAME)/
+	-cp ./etc/$(NAME).conf $(CONFIG)/
 	-sed -i 's;__PREFIX__;$(PREFIX);' $(CONFIG)/$(NAME).conf 
 
 # uninstall - Uninstall the myst package on a new system
 uninstall:
-	-rm -fv $(PREFIX)/bin/$(NAME)
-	-rm -fv $(CONFIG)/$(NAME).conf
-	-rm -rfv $(PREFIX)/share/$(NAME)/
+	-rm -f $(PREFIX)/bin/$(NAME)
+	-rm -f $(CONFIG)/$(NAME).conf
+	-rm -rf $(PREFIX)/share/$(NAME)/
+	-systemctl disable lucee
+	-rm -f /usr/lib/systemd/system/lucee.service
 
 #if 0 
 # usermake - Create a modified Makefile for regular users

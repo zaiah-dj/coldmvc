@@ -31,7 +31,7 @@ HTTPD_CONFDIR=/etc/httpd/conf
 SYSTEMD_LIBDIR=/usr/lib/systemd/system
 LUCEE_WWW_DOWNLOAD_HOME=https://download.lucee.org
 LUCEE_WWW_CHECKSTRING=cdn.lucee.org
-LUCEE_PREFIX=/usr/local/lucee
+LUCEE_PREFIX=/usr/local/myst/lucee
 FILE_BASE=$PREFIX/share/myst/mystinstall
 TMP_DIR=/var/tmp
 CHECK="sed grep wget systemctl httpd"
@@ -340,8 +340,8 @@ then
 	sed -i '$ a # Include CFML settings in one file' $HTTPD_CONFDIR/httpd.conf
 	sed -i '$ a Include conf/extra/httpd-cfml.conf' $HTTPD_CONFDIR/httpd.conf
 	sed -i '{
-		/User http/User ramar/;
-		/Group http/Group ramar/;
+		s/User http/User ramar/;
+		s/Group http/Group ramar/;
 		/#LoadModule proxy_module modules\/mod_proxy.so/ s/^#//;
 		/#LoadModule proxy_connect_module modules\/mod_proxy_connect.so/ s/^#//;
 		/#LoadModule proxy_http_module modules\/mod_proxy_http.so/ s/^#//;
